@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - ClinicEase{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Banner -->
+    <div class="card" style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <h2>Welcome, {{ user.name }}</h2>
+                <span class="status-badge status-confirmed">Patient</span>
+            </div>
+            <p style="font-size: 12px; margin-top: 4px;">{{ user.email }} • Select available slots to request appointments</p>
+        </div>
+
+        <div>
+            <a href="/logout" class="btn btn-outline btn-sm">Log Out</a>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <!-- Left: Available Slots -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>Available Appointment Slots</h3>
+                        <p style="font-size: 11px;">Click "Book" to schedule an appointment</p>
+                    </div>
+                    <span class="status-badge status-confirmed">{{ slots|length }} Available</span>
+                </div>
+
+                {% if slots %}
+                <div>
+                    {% for slot in slots %}
+                    <div class="item-row">
+                        <div>
+                            <div class="item-info-title">{{ slot.slot_date }} • {{ slot.time }}</div>
+                            <div class="item-info-sub">Slot ID #{{ slot.slot_id }}</div>
+                        </div>
+
+                        <button onclick="openBookingModal('{{ slot.slot_id }}', '{{ slot.slot_date }}', '{{ slot.time }}')" class="btn btn-primary btn-sm">
+                            Book
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 40px 0; color: var(--color-forest-muted);">
+                    <p style="font-size: 13px;">No available appointment slots found at the moment.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: My Appointments -->
+        <div>
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>My Appointments</h3>
+                        <p style="font-size: 11px;">Track your past and active requests</p>
+                    </div>
+                </div>
+
+                {% if appointments %}
+                <div>
+                    {% for appt in appointments %}
+                    <div class="card card-cream" style="margin-bottom: 12px; padding: 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <strong style="font-size: 12px; color: var(--color-forest);">{{ appt.slot_date }} • {{ appt.time }}</strong>
+                            {% if appt.status == 'Pending' %}
+                            <span class="status-badge status-pending">Pending</span>
+                            {% elif appt.status == 'Confirmed' %}
+                            <span class="status-badge status-confirmed">Confirmed</span>
+                            {% elif appt.status == 'Completed' %}
+                            <span class="status-badge status-completed">Completed</span>
+                            {% else %}
+                            <span class="status-badge status-cancelled">{{ appt.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div style="font-size: 11px; margin-bottom: 6px;">
+                            <strong>Purpose:</strong> {{ appt.purpose }}
+                        </div>
+
+                        <div style="font-size: 10px; color: var(--color-forest-muted); display: flex; justify-content: space-between;">
+                            <span>Appt #{{ appt.appointment_id }}</span>
+                            <span>{{ appt.created_at }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 40px 0; color: var(--color-forest-muted);">
+                    <p style="font-size: 13px;">You have no appointment bookings yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Confirmation Modal -->
+<div id="booking-modal" class="modal-backdrop hidden">
+    <div class="modal-dialog">
+        <button onclick="closeBookingModal()" class="modal-close-btn">&times;</button>
+
+        <div class="modal-header">
+            <h3>Confirm Booking</h3>
+            <p id="modal-slot-info" style="font-size: 11px; margin-top: 2px;"></p>
+        </div>
+
+        <form id="booking-form" onsubmit="handleBookSlot(event)" class="modal-body">
+            <input type="hidden" id="modal-slot-id" name="slot_id">
+            
+            <div class="form-group">
+                <label class="form-label">Purpose of Visit</label>
+                <textarea id="modal-purpose" rows="3" required placeholder="e.g. Regular medical checkup, routine consultation..." class="form-textarea"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                Submit Appointment Request
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

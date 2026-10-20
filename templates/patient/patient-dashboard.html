@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ClinicEase | Patient Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="app-page">
+    <div class="layout">
+        <aside class="sidebar"><a class="brand" href="patient-dashboard.html"><span
+                    class="brand-mark small">C</span><span>ClinicEase<small>Patient portal</small></span></a>
+            <p class="nav-label">MENU</p>
+            <nav><a class="active" href="patient-dashboard.html">⌂ &nbsp; Dashboard</a><a href="appointments.html">▤
+                    &nbsp; My appointments</a><a href="booking.html">＋ &nbsp; Book appointment</a></nav>
+            <div class="sidebar-bottom">
+                <div class="help-card"><b>Need a hand?</b>
+                    <p>Contact clinic staff for appointment concerns.</p>
+                </div><a href="index.html">↪ &nbsp; Sign out</a>
+            </div>
+        </aside>
+        <main class="main">
+            <header class="topbar"><span>Patient portal / Dashboard</span>
+                <div class="user"><span class="avatar">KB</span>
+                    <div><b>Ken Benitez</b><small>Patient account</small></div>
+                </div>
+            </header>
+            <section class="content">
+                <div class="welcome">
+                    <div>
+                        <p class="eyebrow">WEDNESDAY, OCTOBER 21, 2026</p>
+                        <h1>Good morning, Ken <span>☀</span></h1>
+                        <p class="muted">Here's an overview of your appointments and next steps.</p>
+                    </div><a class="btn primary" href="booking.html">＋ Book an appointment</a>
+                </div>
+                <div class="stats">
+                    <article class="stat"><span>▦</span>
+                        <div>
+                            <p>Upcoming appointments</p><strong>1</strong><small>Scheduled visits</small>
+                        </div>
+                    </article>
+                    <article class="stat"><span class="sand">◷</span>
+                        <div>
+                            <p>Pending requests</p><strong>1</strong><small>Awaiting clinic review</small>
+                        </div>
+                    </article>
+                    <article class="stat"><span>✓</span>
+                        <div>
+                            <p>Completed visits</p><strong>3</strong><small>Your visit history</small>
+                        </div>
+                    </article>
+                </div>
+                <div class="columns">
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Next appointment</h2>
+                                <p>Your upcoming clinic visit</p>
+                            </div><a href="appointments.html">View all →</a>
+                        </div>
+                        <div class="feature">
+                            <div class="date"><b>OCT</b><strong>24</strong><small>SAT</small></div>
+                            <div class="feature-info"><span class="status confirmed">Confirmed</span>
+                                <h3>General consultation</h3>
+                                <p>◷ &nbsp; 9:30 AM – 10:00 AM</p>
+                                <p>⌖ &nbsp; Main clinic</p>
+                            </div>
+                        </div>
+                        <div class="panel-foot"><small>Please arrive 10 minutes early.</small><a
+                                class="btn outline small" href="appointment-details.html">View details</a></div>
+                    </section>
+                    <section class="panel">
+                        <div class="panel-head">
+                            <div>
+                                <h2>Quick actions</h2>
+                                <p>What would you like to do?</p>
+                            </div>
+                        </div><a class="quick" href="booking.html"><span>＋</span>
+                            <div><b>Book an appointment</b><small>Choose an available date and time</small></div>→
+                        </a><a class="quick" href="appointments.html"><span>▤</span>
+                            <div><b>View my appointments</b><small>Check statuses and past visits</small></div>→
+                        </a>
+                        <div class="notice">ⓘ &nbsp; Appointment requests are reviewed by clinic staff. Check your
+                            status here for updates.</div>
+                    </section>
+                </div>
+                <section class="panel recent">
+                    <div class="panel-head">
+                        <div>
+                            <h2>Recent activity</h2>
+                            <p>Your latest appointment updates</p>
+                        </div><a href="appointments.html">See history →</a>
+                    </div>
+                    <div class="activity"><i></i>
+                        <div><b>Appointment confirmed</b>
+                            <p>Your general consultation on October 24 has been confirmed.</p>
+                        </div><small>Oct 19, 2026</small>
+                    </div>
+                    <div class="activity"><i class="pending-dot"></i>
+                        <div><b>Request submitted</b>
+                            <p>Your follow-up request is waiting for clinic staff approval.</p>
+                        </div><small>Oct 18, 2026</small>
+                    </div>
+                </section>
+                <footer>ClinicEase · A simpler way to manage your clinic visits.</footer>
+            </section>
+        </main>
+    </div>
+    <div id="toast" class="toast"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>

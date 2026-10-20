@@ -4,152 +4,110 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClinicEase API Testing Panel</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 0 20px;
-            background-color: #f9fafb;
-            color: #111827;
-        }
-        h2 { border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
-        .card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        input, button, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            margin-bottom: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #1f2937;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover { background-color: #374151; }
-        pre {
-            background: #f3f4f6;
-            padding: 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-size: 14px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #e5e7eb;
-            padding: 10px;
-            text-align: left;
-            font-size: 14px;
-        }
-        th { background-color: #f3f4f6; }
-        .status-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .badge-available { background-color: #d1fae5; color: #065f46; }
-        .badge-booked { background-color: #fee2e2; color: #991b1b; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 </head>
-<body>
+<body style="padding: 20px 0;">
 
-    <h2>ClinicEase API Testing Panel</h2>
-    <p>Status: <span style="color: green; font-weight: bold;">Server Online</span></p>
+    <div class="container" style="max-width: 800px;">
+        <div style="margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <h2>ClinicEase API Testing Panel</h2>
+                <p style="font-size: 12px;">Status: <strong style="color: var(--color-sage);">Server Online</strong></p>
+            </div>
+            <a href="/" class="btn btn-outline btn-sm">Back to Home</a>
+        </div>
 
-    <!-- 1. Login Section -->
-    <div class="card">
-        <h3>1. Test POST /api/login</h3>
-        <input type="email" id="loginEmail" placeholder="Enter email (e.g., gaudenz@example.com or maria.patient@example.com)" value="gaudenz@example.com">
-        <input type="password" id="loginPassword" placeholder="Enter password (password123)" value="password123">
-        <button onclick="testLogin()">Login</button>
-        <pre id="loginResponse">Response will appear here...</pre>
-    </div>
+        <!-- 1. Login Section -->
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>1. Test POST /api/login</h3>
+            <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label">Email</label>
+                <input type="email" id="loginEmail" class="form-input" value="gaudenz@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" id="loginPassword" class="form-input" value="password123">
+            </div>
+            <button onclick="testLogin()" class="btn btn-primary btn-block">Login</button>
+            <pre id="loginResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
+        </div>
 
-    <!-- 2. Dashboard Slots Section -->
-    <div class="card">
-        <h3>2. Test GET /api/dashboard/slots</h3>
-        <button onclick="testDashboardSlots()">Fetch Available Slots (Factory Pattern)</button>
-        <pre id="slotsResponse">Response will appear here...</pre>
-    </div>
+        <!-- 2. Dashboard Slots Section -->
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>2. Test GET /api/dashboard/slots</h3>
+            <button onclick="testDashboardSlots()" class="btn btn-primary btn-block" style="margin-top: 12px;">Fetch Available Slots (Factory Pattern)</button>
+            <pre id="slotsResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
+        </div>
 
-    <!-- 3. Slot Booking Section -->
-    <div class="card">
-        <h3>3. Test POST /api/slots/book</h3>
-        <input type="number" id="slotId" placeholder="Enter Slot ID to book (e.g., 1, 2, 4)">
-        <input type="text" id="purpose" placeholder="Enter purpose of visit" value="General Checkup">
-        <button onclick="testBookSlot()">Book Slot</button>
-        <pre id="bookResponse">Response will appear here...</pre>
-    </div>
+        <!-- 3. Slot Booking Section -->
+        <div class="card" style="margin-bottom: 20px;">
+            <h3>3. Test POST /api/slots/book</h3>
+            <div class="form-group" style="margin-top: 12px;">
+                <label class="form-label">Slot ID</label>
+                <input type="number" id="slotId" class="form-input" placeholder="e.g. 1, 2, 4">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Purpose</label>
+                <input type="text" id="purpose" class="form-input" value="General Checkup">
+            </div>
+            <button onclick="testBookSlot()" class="btn btn-primary btn-block">Book Slot</button>
+            <pre id="bookResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
+        </div>
 
-    <!-- 4. Live Data Summary Table -->
-    <div class="card">
-        <h3>4. Live Session & Slots Overview</h3>
-        <p><strong>Current Active Role:</strong> <span id="uiRole">Not Logged In</span></p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Slot ID</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="slotsTableBody">
-                <tr>
-                    <td colspan="4" style="text-align: center; color: #6b7280;">No data loaded yet. Click "Fetch Available Slots" above.</td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- 4. Live Data Summary Table -->
+        <div class="card">
+            <h3>4. Live Session & Slots Overview</h3>
+            <p style="font-size: 12px; margin: 8px 0 14px 0;"><strong>Active Role:</strong> <span id="uiRole">Not Logged In</span></p>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Slot ID</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="slotsTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--color-forest-muted);">No data loaded yet. Click "Fetch Available Slots" above.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
         async function testLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
 
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password })
             });
             const data = await res.json();
-            document.getElementById('loginResponse').innerText = JSON.stringify(data, null, 2);
+            document.getElementById("loginResponse").innerText = JSON.stringify(data, null, 2);
             
             if (data.role) {
-                document.getElementById('uiRole').innerText = data.role;
+                document.getElementById("uiRole").innerText = data.role;
             }
         }
 
         async function testDashboardSlots() {
-            const res = await fetch('/api/dashboard/slots');
+            const res = await fetch("/api/dashboard/slots");
             const data = await res.json();
-            document.getElementById('slotsResponse').innerText = JSON.stringify(data, null, 2);
+            document.getElementById("slotsResponse").innerText = JSON.stringify(data, null, 2);
 
-            const tbody = document.getElementById('slotsTableBody');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById("slotsTableBody");
+            tbody.innerHTML = "";
 
-            if (data.status === 'success' && data.slots.length > 0) {
+            if (data.status === "success" && data.slots.length > 0) {
                 data.slots.forEach(slot => {
-                    const tr = document.createElement('tr');
-                    const badgeClass = slot.status === 'Available' ? 'badge-available' : 'badge-booked';
+                    const tr = document.createElement("tr");
+                    const badgeClass = slot.status === "Available" ? "status-available" : "status-booked";
                     
                     tr.innerHTML = `
                         <td>${slot.slot_id}</td>
@@ -165,19 +123,18 @@
         }
 
         async function testBookSlot() {
-            const slot_id = document.getElementById('slotId').value;
-            const purpose = document.getElementById('purpose').value;
+            const slot_id = document.getElementById("slotId").value;
+            const purpose = document.getElementById("purpose").value;
 
-            const res = await fetch('/api/slots/book', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+            const res = await fetch("/api/slots/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ slot_id: parseInt(slot_id), purpose })
             });
             const data = await res.json();
-            document.getElementById('bookResponse').innerText = JSON.stringify(data, null, 2);
+            document.getElementById("bookResponse").innerText = JSON.stringify(data, null, 2);
 
-            // Automatically refresh the slots table after booking attempt
-            if (data.status === 'success') {
+            if (data.status === "success") {
                 testDashboardSlots();
             }
         }

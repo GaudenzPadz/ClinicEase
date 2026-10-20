@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clinic Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #FAF8F1;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #486852;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+    .container { padding: 20px; }
+
+    /* Stat Cards */
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      flex: 1;
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .stat-card h3 { margin: 0; font-size: 14px; color: #31443A; }
+    .stat-card input {
+      margin-top: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      border: 1px solid #6F7F73;
+      border-radius: 5px;
+      width: 80px;
+    }
+
+    /* Ring Pie Chart */
+    .piechart {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #4CAF50 0% 50%,   /* Consultation */
+        #FF9800 50% 75%,  /* Absence */
+        #2196F3 75% 100%  /* Return */
+      );
+      margin: 20px auto;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .center-text {
+      background: #FAF8F1;
+      border-radius: 50%;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: bold;
+      color: #31443A;
+    }
+    .chart-edit {
+      text-align: center;
+      margin-top: 10px;
+    }
+    .chart-edit input {
+      width: 120px;
+      text-align: center;
+      margin: 5px;
+      border: 1px solid #6F7F73;
+      border-radius: 4px;
+      padding: 3px;
+    }
+
+    /* Tables */
+    .card {
+      background: #FFFFFF;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card h2 { margin: 0 0 10px; color: #31443A; font-size: 16px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    table th, table td {
+      border: 1px solid #D9E1D7;
+      padding: 8px;
+      text-align: center;
+    }
+    table th { background: #D9E1D7; }
+
+    .editable-input {
+      padding: 4px;
+      border-radius: 4px;
+      border: 1px solid #6F7F73;
+      width: 90%;
+      font-size: 13px;
+    }
+    .action-buttons button {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 2px;
+      font-size: 12px;
+      color: white;
+    }
+    .approve { background: #4CAF50; }
+    .reject { background: #F44336; }
+    .reschedule { background: #FF9800; }
+    .edit { background: #2196F3; }
+  </style>
+</head>
+<body>
+  <header>Clinic Dashboard</header>
+  
+  <div class="container">
+    <!-- Stat Cards -->
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Total Appointments</h3>
+        <input type="text" value="12">
+      </div>
+      <div class="stat-card">
+        <h3>Pending Requests</h3>
+        <input type="text" value="5">
+      </div>
+      <div class="stat-card">
+        <h3>Available Slots</h3>
+        <input type="text" value="20">
+      </div>
+    </div>
+
+    <!-- Editable Ring Pie Chart -->
+    <div class="piechart">
+      <div class="center-text" id="centerText">214 Patients</div>
+    </div>
+    <div class="chart-edit">
+      <label>Edit Patients:</label>
+      <input type="text" id="patientsInput" value="214 Patients" oninput="updateChartCenter()">
+    </div>
+
+    <!-- Manage Slots -->
+    <div class="card">
+      <h2>Manage Slots</h2>
+      <table>
+        <tr>
+          <th>Date</th><th>Time</th><th>Doctor</th><th>Status</th><th>Action</th>
+        </tr>
+        <tr>
+          <td><input type="text" class="editable-input" value="Oct 20"></td>
+          <td><input type="text" class="editable-input" value="10:00 AM"></td>
+          <td><input type="text" class="editable-input" value="Dr. Smith"></td>
+          <td><input type="text" class="editable-input" value="Available"></td>
+          <td class="action-buttons">
+            <button class="edit">Edit</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="text" class="editable-input" value="Oct 20"></td>
+          <td><input type="text" class="editable-input" value="2:00 PM"></td>
+          <td><input type="text" class="editable-input" value="Dr. Lee"></td>
+          <td><input type="text" class="editable-input" value="Unavailable"></td>
+          <td class="action-buttons">
+            <button class="edit">Edit</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Manage Appointments -->
+    <div class="card">
+      <h2>Manage Appointments</h2>
+      <table>
+        <tr>
+          <th>Patient</th><th>Service</th><th>Time</th><th>Action</th>
+        </tr>
+        <tr>
+          <td><input type="text" class="editable-input" value="Maria Santos"></td>
+          <td><input type="text" class="editable-input" value="General Checkup"></td>
+          <td><input type="text" class="editable-input" value="Oct 20, 9:00 AM"></td>
+          <td class="action-buttons">
+            <button class="approve">Approve</button>
+            <button class="reject">Reject</button>
+            <button class="reschedule">Reschedule</button>
+          </td>
+        </tr>
+        <tr>
+          <td><input type="text" class="editable-input" value="Juan Dela Cruz"></td>
+          <td><input type="text" class="editable-input" value="Dental Cleaning"></td>
+          <td><input type="text" class="editable-input" value="Oct 21, 1:00 PM"></td>
+          <td class="action-buttons">
+            <button class="approve">Approve</button>
+            <button class="reject">Reject</button>
+            <button class="reschedule">Reschedule</button>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function updateChartCenter() {
+      const input = document.getElementById("patientsInput").value;
+      document.getElementById("centerText").textContent = input;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}ClinicEase - Healthcare Appointment System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <section class="hero-section">
+        <span class="badge-pill">Centralized Clinic Scheduling</span>
+        <h1 class="hero-title">Simple, transparent clinic appointments for everyone.</h1>
+        <p class="hero-description">
+            ClinicEase streamlines healthcare scheduling for patients and clinic staff. Select an available time slot, submit your request, and track appointment updates in real time.
+        </p>
+        <div class="hero-actions">
+            <a href="/register" class="btn btn-primary">Book an Appointment</a>
+            <a href="/login" class="btn btn-outline">Sign In to Account</a>
+        </div>
+    </section>
+</div>
+
+<section class="section-block">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">How ClinicEase Works</h2>
+            <p class="section-subtitle">A straightforward three-step workflow designed for patients and healthcare providers.</p>
+        </div>
+
+        <div class="grid-3">
+            <div class="card card-cream">
+                <div class="step-num">1</div>
+                <h3>Browse Available Slots</h3>
+                <p>View real-time appointment openings created and maintained by clinic staff.</p>
+            </div>
+
+            <div class="card card-cream">
+                <div class="step-num">2</div>
+                <h3>Submit Booking Request</h3>
+                <p>Select your preferred schedule and submit your consultation details with concurrency protection.</p>
+            </div>
+
+            <div class="card card-cream">
+                <div class="step-num">3</div>
+                <h3>Track Status Updates</h3>
+                <p>Receive immediate updates as clinic staff review, confirm, or complete your appointment.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <section style="padding: 30px 0;">
+        <div class="section-header">
+            <h2 class="section-title">Appointment Status Lifecycle</h2>
+            <p class="section-subtitle">Clear visual indicators keep all parties informed at every stage.</p>
+        </div>
+
+        <div class="grid-4">
+            <div class="card" style="text-align: center;">
+                <span class="status-badge status-pending">Pending</span>
+                <p style="font-size: 11px; margin-top: 8px;">Awaiting staff confirmation</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <span class="status-badge status-confirmed">Confirmed</span>
+                <p style="font-size: 11px; margin-top: 8px;">Approved by clinic staff</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <span class="status-badge status-completed">Completed</span>
+                <p style="font-size: 11px; margin-top: 8px;">Consultation concluded</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <span class="status-badge status-cancelled">Cancelled</span>
+                <p style="font-size: 11px; margin-top: 8px;">Slot returned to available</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -2,7 +2,10 @@ DROP DATABASE IF EXISTS clinicease_db;
 CREATE DATABASE clinicease_db;
 USE clinicease_db;
 
--- 1. Users table (Supports role-based dashboard factory logic)
+-- ============================================================================
+-- 1. USERS TABLE
+-- Encapsulates core user account information with role-based segregation.
+-- ============================================================================
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -11,14 +14,18 @@ CREATE TABLE users (
     role ENUM('Patient', 'Clinic Staff') NOT NULL
 );
 
--- Insert multiple test users (all passwords are set to 'password123' via SHA2)
+-- Seed Data: All test accounts have the password 'password123'
+-- MySQL's SHA2('password123', 256) exactly matches Python's hashlib.sha256
 INSERT INTO users (name, email, password_hash, role) VALUES 
 ('Gaudenz Padullon', 'gaudenz@example.com', SHA2('password123', 256), 'Clinic Staff'),
+('Dr. Sarah Jenkins', 'staff.sarah@example.com', SHA2('password123', 256), 'Clinic Staff'),
 ('Maria Santos', 'maria.patient@example.com', SHA2('password123', 256), 'Patient'),
-('Juan Dela Cruz', 'juan.patient@example.com', SHA2('password123', 256), 'Patient'),
-('Dr. Sarah Jenkins', 'staff.sarah@example.com', SHA2('password123', 256), 'Clinic Staff');
+('Juan Dela Cruz', 'juan.patient@example.com', SHA2('password123', 256), 'Patient');
 
--- 2. Appointment slots table (Supports state protection & dashboard services)
+-- ============================================================================
+-- 2. APPOINTMENT SLOTS TABLE
+-- Manages time slots with availability status.
+-- ============================================================================
 CREATE TABLE IF NOT EXISTS appointment_slots (
     slot_id INT AUTO_INCREMENT PRIMARY KEY,
     slot_date DATE NOT NULL,
@@ -26,17 +33,20 @@ CREATE TABLE IF NOT EXISTS appointment_slots (
     status VARCHAR(50) DEFAULT 'Available'
 );
 
--- Insert multiple sample slots with varied dates, times, and statuses
+-- Seed Data: Sample appointment slots
 INSERT INTO appointment_slots (slot_date, time, status) VALUES 
 ('2026-10-15', '09:00 AM', 'Available'),
 ('2026-10-15', '10:00 AM', 'Available'),
-('2026-10-15', '11:00 AM', 'Booked'), -- Linked to an appointment below
+('2026-10-15', '11:00 AM', 'Booked'), -- Pre-linked to Maria Santos
 ('2026-10-16', '01:30 PM', 'Available'),
 ('2026-10-16', '03:00 PM', 'Available'),
-('2026-10-17', '08:30 AM', 'Booked'), -- Linked to an appointment below
+('2026-10-17', '08:30 AM', 'Booked'), -- Pre-linked to Juan Dela Cruz
 ('2026-10-17', '10:00 AM', 'Available');
 
--- 3. Appointments table (Tracks confirmed bookings, purposes, and relations)
+-- ============================================================================
+-- 3. APPOINTMENTS TABLE
+-- Tracks appointment records, patient assignments, and lifecycle statuses.
+-- ============================================================================
 DROP TABLE IF EXISTS appointments;
 
 CREATE TABLE appointments (
@@ -46,11 +56,11 @@ CREATE TABLE appointments (
     purpose VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (slot_id) REFERENCES appointment_slots(slot_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (slot_id) REFERENCES appointment_slots(slot_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Insert sample appointments matching the new columns
+-- Seed Data: Sample initial appointments
 INSERT INTO appointments (slot_id, user_id, purpose, status) VALUES 
-(3, 2, 'General Medical Checkup - Maria Santos', 'Pending'),
-(6, 3, 'Dental Consultation - Juan Dela Cruz', 'Pending');
+(3, 3, 'General Medical Checkup - Maria Santos', 'Pending'),
+(6, 4, 'Dental Consultation - Juan Dela Cruz', 'Pending');

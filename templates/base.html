@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ClinicEase - Appointment System{% endblock %}</title>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <header class="header">
+        <div class="container header-content">
+            <a href="/" class="brand">
+                <div class="brand-icon">CE</div>
+                <div>
+                    <div class="brand-title">ClinicEase</div>
+                    <div class="brand-subtitle">Appointment System</div>
+                </div>
+            </a>
+
+            <nav class="nav-actions">
+                <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
+                <a href="/register" class="btn btn-primary btn-sm">Book Appointment</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <div>
+                <strong>ClinicEase System &copy; 2026</strong>
+                <div>Web-Based Healthcare Appointment Management</div>
+            </div>
+            <div>
+                <div>Course: Object Oriented Programming</div>
+                <div>Proponents: Bautista, Benitez, Padullon | Instructor: Mr. John Romel Tinasas</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/base.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
