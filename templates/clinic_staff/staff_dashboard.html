@@ -1,250 +1,528 @@
 {% extends "base.html" %}
-
 {% block title %}Staff Dashboard - ClinicEase{% endblock %}
-
 {% block page_css %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/staff-dashboard.css') }}">
 {% endblock %}
-
 {% block content %}
-<div class="container">
-    <header class="dashboard-welcome">
-        <div>
-            <h1>Clinic Staff Dashboard</h1>
-            <p>Welcome, {{ user.name }}. Manage appointment requests and clinic times.</p>
-        </div>
-        <button class="btn btn-secondary" id="report-button" type="button"
-                data-endpoint="{{ url_for('get_staff_appointment_report') }}">
-            View Appointment Report
-        </button>
-    </header>
-
-    <section id="report-card" class="card report-card hidden" aria-labelledby="report-title" aria-hidden="true">
-        <div class="card-header">
-            <h2 id="report-title">Appointment Summary Report</h2>
-            <button class="btn btn-secondary btn-sm" id="close-report" type="button">Close report</button>
-        </div>
-        <pre id="report-content" class="report-content"></pre>
-    </section>
-
-    <section class="card staff-section" aria-labelledby="pending-title">
-        <div class="card-header">
-            <div>
-                <h2 id="pending-title">Pending Requests</h2>
-                <p>Approve requests or reject them to return the slot to the schedule.</p>
+<div class="staff-layout">
+    <!-- Left Sidebar Navigation -->
+    <aside class="staff-sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <span class="brand-icon">CE</span>
+                <span class="brand-title">ClinicEase</span>
             </div>
-            <span class="badge-pending">{{ pending_appointments|length }} Pending</span>
+            <p class="user-info">{{ user.name }}</p>
         </div>
-        {% if pending_appointments %}
-            <div class="table-responsive">
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-section="dashboard" type="button">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-section="pending" type="button">
+                <span class="material-symbols-outlined">schedule</span>
+                <span>Pending Requests</span>
+                {% if pending_appointments|length > 0 %}
+                <span class="badge-count">{{ pending_appointments|length }}</span>
+                {% endif %}
+            </button>
+            <button class="nav-item" data-section="confirmed" type="button">
+                <span class="material-symbols-outlined">event_available</span>
+                <span>Confirmed</span>
+                {% if confirmed_appointments|length > 0 %}
+                <span class="badge-count">{{ confirmed_appointments|length }}</span>
+                {% endif %}
+            </button>
+            <button class="nav-item" data-section="slots" type="button">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span>Appointment Times</span>
+            </button>
+            <button class="nav-item" data-section="reports" type="button">
+                <span class="material-symbols-outlined">assessment</span>
+                <span>Reports</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">
+                <span class="material-symbols-outlined">logout</span>
+                Log Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="staff-main">
+        <!-- Dashboard Overview -->
+        <section id="dashboard-section" class="content-section active"
+                 data-stats-url="{{ url_for('get_staff_dashboard_stats') }}">
+            <header class="section-header">
+                <div>
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome back, {{ user.name }}. Here's what needs your attention.</p>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card stat-pending">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">schedule</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="stat-pending-count" class="stat-number">{{ pending_appointments|length }}</span>
+                        <span class="stat-label">Pending Requests</span>
+                        <span id="pending-trend" class="stat-trend" aria-live="polite">Loading trend…</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-confirmed">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">event_available</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="stat-confirmed-count" class="stat-number">—</span>
+                        <span class="stat-label">Confirmed This Week</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-completed">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">task_alt</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="stat-completed-count" class="stat-number">—</span>
+                        <span class="stat-label">Completed This Month</span>
+                    </div>
+                </div>
+                <div class="stat-card stat-slots">
+                    <div class="stat-icon">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                    </div>
+                    <div class="stat-info">
+                        <span id="stat-available-slots" class="stat-number">—</span>
+                        <span class="stat-label">Available Slots · 7 Days</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <article class="dashboard-card chart-card">
+                    <header class="dashboard-card__header">
+                        <div>
+                            <h2>Appointment Status</h2>
+                            <p>All appointments by current status</p>
+                        </div>
+                    </header>
+                    <div class="chart-container chart-container--doughnut">
+                        <canvas id="appointment-status-chart" aria-label="Appointments by status chart" role="img"></canvas>
+                    </div>
+                </article>
+                <article class="dashboard-card chart-card">
+                    <header class="dashboard-card__header">
+                        <div>
+                            <h2>Bookings This Week</h2>
+                            <p>Daily appointments for the next seven days</p>
+                        </div>
+                    </header>
+                    <div class="chart-container">
+                        <canvas id="weekly-bookings-chart" aria-label="Bookings per day for the next seven days" role="img"></canvas>
+                    </div>
+                </article>
+            </div>
+
+            {% if pending_appointments %}
+            <div class="action-card">
+                <div class="action-header">
+                    <h2><span class="material-symbols-outlined">schedule</span> Pending Requests</h2>
+                    <button class="btn btn-primary" data-nav="pending">Review Now</button>
+                </div>
+                <p>{{ pending_appointments|length }} appointment{{ 's' if pending_appointments|length != 1 }} waiting for your approval.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Pending Requests Section -->
+        <section id="pending-section" class="content-section">
+            <header class="section-header">
+                <div>
+                    <h1>Pending Requests</h1>
+                    <p>Review and approve or reject new appointment requests.</p>
+                    <nav class="workflow-breadcrumb" aria-label="Appointment workflow">
+                        <span class="workflow-pill is-current">Review</span>
+                        <span class="workflow-arrow" aria-hidden="true">→</span>
+                        <span class="workflow-pill">Approve / Reject</span>
+                        <span class="workflow-arrow" aria-hidden="true">→</span>
+                        <span class="workflow-pill">Complete</span>
+                    </nav>
+                </div>
+            </header>
+
+            {% if pending_appointments %}
+            <div class="table-container">
                 <table class="data-table">
-                    <caption class="visually-hidden">Pending appointment requests</caption>
+                <colgroup>
+                    <col class="column-patient">
+                    <col class="column-contact">
+                    <col class="column-datetime">
+                    <col class="column-purpose">
+                    <col class="column-status">
+                    <col class="column-actions">
+                </colgroup>
                     <thead>
-                        <tr>
-                            <th scope="col">Request</th>
-                            <th scope="col">Patient</th>
-                            <th scope="col">Contact</th>
-                            <th scope="col">Schedule</th>
-                            <th scope="col">Purpose</th>
-                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    <tr>
+                        <th>Patient</th>
+                            <th>Contact</th>
+                            <th>Date & Time</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for appt in pending_appointments %}
-                            <tr>
-                                <td>#{{ appt.appointment_id }}</td>
-                                <td>{{ appt.patient_name }}</td>
-                                <td>{{ appt.contact_number or appt.email }}</td>
-                                <td>{{ appt.slot_date }}<br><span class="table-secondary">{{ appt.time }}</span></td>
-                                <td>{{ appt.purpose }}</td>
-                                <td>
-                                    <div class="table-actions">
-                                        <button class="btn btn-approve btn-sm" type="button"
-                                                data-appointment-action="confirm"
-                                                data-appointment-id="{{ appt.appointment_id }}"
-                                                data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
-                                            Approve
-                                        </button>
-                                        <button class="btn btn-reject btn-sm" type="button"
-                                                data-appointment-action="cancel"
-                                                data-appointment-id="{{ appt.appointment_id }}"
-                                                data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
-                                            Reject
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td>
+                                <div class="patient-info">
+                                    <span class="patient-name">{{ appt.patient_name }}</span>
+                                    <span class="appointment-id">#{{ appt.appointment_id }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <span class="material-symbols-outlined">email</span>
+                                    {{ appt.email }}
+                                </div>
+                                {% if appt.contact_number %}
+                                <div class="contact-info">
+                                    <span class="material-symbols-outlined">phone</span>
+                                    {{ appt.contact_number }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="datetime-info">
+                                    <span class="material-symbols-outlined">calendar_today</span>
+                                    {{ appt.slot_date }}
+                                </div>
+                                <div class="datetime-info">
+                                    <span class="material-symbols-outlined">schedule</span>
+                                    {{ appt.time }}
+                                </div>
+                            </td>
+                            <td>{{ appt.purpose }}</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-approve" type="button"
+                                            data-appointment-action="confirm"
+                                            data-appointment-id="{{ appt.appointment_id }}"
+                                            data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
+                                        <span class="material-symbols-outlined">check_circle</span>
+                                        Approve
+                                    </button>
+                                    <button class="btn btn-reject" type="button"
+                                            data-appointment-action="cancel"
+                                            data-appointment-id="{{ appt.appointment_id }}"
+                                            data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
+                                        <span class="material-symbols-outlined">cancel</span>
+                                        Reject
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        {% else %}
-            <p class="empty-state">There are no pending appointment requests. You are all caught up.</p>
-        {% endif %}
-    </section>
-
-    <section class="card staff-section" aria-labelledby="confirmed-title">
-        <div class="card-header">
-            <div>
-                <h2 id="confirmed-title">Confirmed Appointments</h2>
-                <p>Mark a visit complete after the patient has been seen.</p>
+            {% else %}
+            <div class="empty-state">
+                <span class="material-symbols-outlined empty-icon">check_circle</span>
+                <h3>All caught up!</h3>
+                <p>No pending appointment requests at this time.</p>
             </div>
-            <span class="badge-confirmed">{{ confirmed_appointments|length }} Confirmed</span>
-        </div>
-        {% if confirmed_appointments %}
-            <div class="table-responsive">
+            {% endif %}
+        </section>
+
+        <!-- Confirmed Appointments Section -->
+        <section id="confirmed-section" class="content-section">
+            <header class="section-header">
+                <div>
+                    <h1>Confirmed Appointments</h1>
+                    <p>Mark visits as completed after the patient has been seen.</p>
+                </div>
+            </header>
+
+            {% if confirmed_appointments %}
+            <div class="table-container">
                 <table class="data-table">
-                    <caption class="visually-hidden">Confirmed appointment visits</caption>
-                    <thead>
+                        <colgroup>
+                            <col class="column-patient">
+                            <col class="column-contact">
+                            <col class="column-datetime">
+                            <col class="column-purpose">
+                            <col class="column-status">
+                            <col class="column-actions">
+                        </colgroup>
+                        <thead>
                         <tr>
-                            <th scope="col">Request</th>
-                            <th scope="col">Patient</th>
-                            <th scope="col">Schedule</th>
-                            <th scope="col">Purpose</th>
-                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            <th>Patient</th>
+                            <th>Contact</th>
+                            <th>Date & Time</th>
+                            <th>Purpose</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for appt in confirmed_appointments %}
-                            <tr>
-                                <td>#{{ appt.appointment_id }}</td>
-                                <td>{{ appt.patient_name }}</td>
-                                <td>{{ appt.slot_date }}<br><span class="table-secondary">{{ appt.time }}</span></td>
-                                <td>{{ appt.purpose }}</td>
-                                <td>
-                                    <button class="btn btn-approve btn-sm" type="button"
-                                            data-appointment-action="complete"
-                                            data-appointment-id="{{ appt.appointment_id }}"
-                                            data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
-                                        Mark Completed
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="empty-state">There are no confirmed visits awaiting completion.</p>
-        {% endif %}
-    </section>
-
-    <section class="card staff-section" aria-labelledby="slots-title">
-        <div class="card-header">
-            <div>
-                <h2 id="slots-title">Manage Appointment Times</h2>
-                <p>Add, disable, enable, or remove appointment times.</p>
-            </div>
-        </div>
-
-        <form class="slot-form" id="generate-slots-form"
-              action="{{ url_for('generate_monthly_slots') }}">
-            <div class="form-group">
-                <label class="form-label" for="slot-month">Generate available times for month</label>
-                <input class="form-input" id="slot-month" name="month" type="month"
-                       value="{{ today.strftime('%Y-%m') }}"
-                       min="{{ today.strftime('%Y-%m') }}" required>
-            </div>
-            <button class="btn btn-primary" type="submit">Generate Monthly Slots</button>
-        </form>
-
-        <form class="slot-form" id="blocked-date-form"
-              action="{{ url_for('create_blocked_date') }}">
-            <div class="form-group">
-                <label class="form-label" for="blocked-date">Clinic closure date</label>
-                <input class="form-input" id="blocked-date" name="blocked_date" type="date"
-                       min="{{ today.isoformat() }}" required>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="blocked-date-reason">Reason</label>
-                <input class="form-input" id="blocked-date-reason" name="reason" type="text"
-                       maxlength="255" required>
-            </div>
-            <button class="btn btn-secondary" type="submit">Block Date</button>
-        </form>
-
-        {% if slots %}
-            <div class="table-responsive slot-table">
-                <table class="data-table">
-                    <caption class="visually-hidden">Clinic appointment times</caption>
-                    <thead>
                         <tr>
-                            <th scope="col">Date</th>
-                            <th scope="col">Time</th>
-                            <th scope="col">Status</th>
-                            <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            <td>
+                                <div class="patient-info">
+                                    <span class="patient-name">{{ appt.patient_name }}</span>
+                                    <span class="appointment-id">#{{ appt.appointment_id }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="contact-info">
+                                    <span class="material-symbols-outlined">email</span>
+                                    {{ appt.email }}
+                                </div>
+                                {% if appt.contact_number %}
+                                <div class="contact-info">
+                                    <span class="material-symbols-outlined">phone</span>
+                                    {{ appt.contact_number }}
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="datetime-info">
+                                    <span class="material-symbols-outlined">calendar_today</span>
+                                    {{ appt.slot_date }}
+                                </div>
+                                <div class="datetime-info">
+                                    <span class="material-symbols-outlined">schedule</span>
+                                    {{ appt.time }}
+                                </div>
+                            </td>
+                            <td>{{ appt.purpose }}</td>
+                            <td>
+                                <span class="status-badge status-confirmed">Confirmed</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-complete" type="button"
+                                        data-appointment-action="complete"
+                                        data-appointment-id="{{ appt.appointment_id }}"
+                                        data-endpoint="{{ url_for('staff_appointment_action', appt_id=appt.appointment_id) }}">
+                                    <span class="material-symbols-outlined">task_alt</span>
+                                    Mark Completed
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {% for slot in slots %}
-                            <tr>
-                                <td>{{ slot.slot_date }}</td>
-                                <td>{{ slot.time }}</td>
-                                <td>
-                                    {% if slot.status == 'Available' %}
-                                        <span class="badge-completed">Available</span>
-                                    {% elif slot.status == 'Booked' %}
-                                        <span class="badge-confirmed">Booked</span>
-                                    {% else %}
-                                        <span class="badge-cancelled">{{ slot.status }}</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if slot.status in ['Available', 'Unavailable', 'Disabled'] %}
-                                        <div class="table-actions">
-                                            {% if not slot.has_appointments %}
-                                                <button class="btn btn-secondary btn-sm" type="button"
-                                                        data-edit-slot
-                                                        data-slot-id="{{ slot.slot_id }}"
-                                                        data-slot-date="{{ slot.slot_date_input }}"
-                                                        data-slot-time="{{ slot.time_input }}"
-                                                        data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}">
-                                                    Edit
-                                                </button>
-                                            {% endif %}
-                                            {% if slot.status == 'Available' %}
-                                                <button class="btn btn-secondary btn-sm" type="button"
-                                                        data-slot-action="disable" data-slot-id="{{ slot.slot_id }}"
-                                                        data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}">
-                                                    Disable
-                                                </button>
-                                            {% else %}
-                                                <button class="btn btn-secondary btn-sm" type="button"
-                                                        data-slot-action="enable" data-slot-id="{{ slot.slot_id }}"
-                                                        data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}">
-                                                    Enable
-                                                </button>
-                                            {% endif %}
-                                            {% if not slot.has_appointments %}
-                                                <button class="btn btn-danger btn-sm" type="button"
-                                                        data-slot-action="delete" data-slot-id="{{ slot.slot_id }}"
-                                                        data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}">
-                                                    Remove
-                                                </button>
-                                            {% endif %}
-                                        </div>
-                                    {% else %}
-                                        <span class="table-secondary">Reserved for an appointment</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-        {% else %}
-            <p class="empty-state">No appointment times have been added yet.</p>
-        {% endif %}
-    </section>
+            {% else %}
+            <div class="empty-state">
+                <span class="material-symbols-outlined empty-icon">event_busy</span>
+                <h3>No confirmed appointments</h3>
+                <p>Confirmed appointments will appear here.</p>
+            </div>
+            {% endif %}
+        </section>
+
+        <!-- Appointment Times Section -->
+        <section id="slots-section" class="content-section">
+            <header class="section-header">
+                <div>
+                    <h1>Manage Appointment Times</h1>
+                    <p>Generate slots, block dates, or manage existing times.</p>
+                </div>
+            </header>
+
+            <div class="management-grid">
+                <!-- Generate Slots Card -->
+                <div class="management-card">
+                    <h3><span class="material-symbols-outlined">add_circle</span> Generate Monthly Slots</h3>
+                    <p>Create available appointment times for the selected month.</p>
+                    <form id="generate-slots-form" action="{{ url_for('generate_monthly_slots') }}">
+                        <div class="form-group">
+                            <label class="form-label" for="slot-month">Select Month</label>
+                            <input class="form-input" id="slot-month" name="month" type="month"
+                                   value="{{ today.strftime('%Y-%m') }}"
+                                   min="{{ today.strftime('%Y-%m') }}" required>
+                        </div>
+                        <button class="btn btn-primary btn-block" type="submit">
+                            Generate Slots
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Block Date Card -->
+                <div class="management-card">
+                    <h3><span class="material-symbols-outlined">block</span> Block a Date</h3>
+                    <p>Mark a date as closed (holiday, vacation, etc.).</p>
+                    <form id="blocked-date-form" action="{{ url_for('create_blocked_date') }}">
+                        <div class="form-group">
+                            <label class="form-label" for="blocked-date">Date</label>
+                            <input class="form-input" id="blocked-date" name="blocked_date" type="date"
+                                   min="{{ today.isoformat() }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="blocked-date-reason">Reason</label>
+                            <input class="form-input" id="blocked-date-reason" name="reason" type="text"
+                                   placeholder="e.g., Christmas Day" maxlength="255" required>
+                        </div>
+                        <button class="btn btn-secondary btn-block" type="submit">
+                            <span class="material-symbols-outlined">block</span>
+                            Block Date
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Appointment Times Calendar -->
+            <div class="slots-table-container">
+                <div class="slots-table-heading">
+                    <div>
+                        <h3>Appointment Times Calendar</h3>
+                        <p>Review availability from today through 14 days ahead.</p>
+                    </div>
+                    <div class="slot-filters" role="group" aria-label="Filter appointment times by date">
+                        <div class="form-group">
+                            <label class="form-label" for="slot-from-date">From</label>
+                            <input class="form-input" id="slot-from-date" type="date"
+                                   min="{{ today.isoformat() }}" aria-label="Filter from date">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="slot-to-date">To</label>
+                            <input class="form-input" id="slot-to-date" type="date"
+                                   min="{{ today.isoformat() }}" aria-label="Filter to date">
+                        </div>
+                        <button id="clear-slot-filters" class="btn btn-secondary" type="button">Clear</button>
+                    </div>
+                </div>
+                <div class="slots-calendar" aria-label="Appointment times by date">
+                    {% for day in calendar_days %}
+                    {% set day_slots = slots|selectattr('slot_date_input', 'equalto', day.isoformat())|list %}
+                    {% set open_count = day_slots|selectattr('status', 'equalto', 'Available')|list|length %}
+                    <article class="calendar-day{% if day == today %} calendar-day--today{% endif %}"
+                             data-calendar-day data-slot-date="{{ day.isoformat() }}"
+                             data-day-index="{{ loop.index0 }}">
+                        <header class="calendar-day__header">
+                            <div>
+                                <span class="calendar-day__weekday">{{ day.strftime('%a') }}</span>
+                                <span class="calendar-day__date">
+                                    {{ day.day }} <small>{{ day.strftime('%b') }}</small>
+                                </span>
+                            </div>
+                            <span class="calendar-day__count{% if open_count == 0 %} calendar-day__count--empty{% endif %}">
+                                {{ open_count }} open
+                            </span>
+                        </header>
+                        <div class="calendar-day__slots">
+                            {% for slot in day_slots %}
+                            <div class="calendar-slot{% if slot.status == 'Available' %} calendar-slot--available{% elif slot.status == 'Booked' %} calendar-slot--booked{% else %} calendar-slot--disabled{% endif %}">
+                                <div class="calendar-slot__info">
+                                    <span class="calendar-slot__time">{{ slot.time }}</span>
+                                    <span class="calendar-slot__status">{{ slot.status }}</span>
+                                </div>
+                                {% if slot.status in ['Available', 'Unavailable', 'Disabled'] %}
+                                <div class="calendar-slot__actions">
+                                    {% if not slot.has_appointments %}
+                                    <button class="btn btn-secondary btn-icon" type="button"
+                                            data-edit-slot
+                                            data-slot-id="{{ slot.slot_id }}"
+                                            data-slot-date="{{ slot.slot_date_input }}"
+                                            data-slot-time="{{ slot.time_input }}"
+                                            data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}"
+                                            aria-label="Edit {{ slot.time }} on {{ day.strftime('%b %d') }}"
+                                            title="Edit">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button>
+                                    {% endif %}
+                                    {% if slot.status == 'Available' %}
+                                    <button class="btn btn-secondary btn-icon" type="button"
+                                            data-slot-action="disable" data-slot-id="{{ slot.slot_id }}"
+                                            data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}"
+                                            aria-label="Disable {{ slot.time }} on {{ day.strftime('%b %d') }}"
+                                            title="Disable">
+                                        <span class="material-symbols-outlined">block</span>
+                                    </button>
+                                    {% else %}
+                                    <button class="btn btn-secondary btn-icon" type="button"
+                                            data-slot-action="enable" data-slot-id="{{ slot.slot_id }}"
+                                            data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}"
+                                            aria-label="Enable {{ slot.time }} on {{ day.strftime('%b %d') }}"
+                                            title="Enable">
+                                        <span class="material-symbols-outlined">check_circle</span>
+                                    </button>
+                                    {% endif %}
+                                    {% if not slot.has_appointments %}
+                                    <button class="btn btn-danger btn-icon" type="button"
+                                            data-slot-action="delete" data-slot-id="{{ slot.slot_id }}"
+                                            data-endpoint="{{ url_for('manage_staff_slot', slot_id=slot.slot_id) }}"
+                                            aria-label="Delete {{ slot.time }} on {{ day.strftime('%b %d') }}"
+                                            title="Delete">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <p class="calendar-day__empty">No times scheduled</p>
+                            {% endfor %}
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                <p id="slot-filter-empty" class="slot-filter-empty" role="status" hidden>
+                    No appointment times match these dates.
+                </p>
+                <div class="slots-table-footer">
+                    <p id="slot-results-count" class="slot-results-count" aria-live="polite"></p>
+                    <button id="show-more-slots" class="btn btn-secondary" type="button" hidden>
+                        Show more dates
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports-section" class="content-section">
+            <header class="section-header">
+                <div>
+                    <h1>Appointment Reports</h1>
+                    <p>Generate and view appointment summaries.</p>
+                </div>
+            </header>
+
+            <div class="report-card">
+                <div class="report-header">
+                    <h2><span class="material-symbols-outlined">description</span> Appointment Summary Report</h2>
+                    <button class="btn btn-primary" id="generate-report-btn" type="button"
+                            data-endpoint="{{ url_for('get_staff_appointment_report') }}">
+                        Generate Report
+                    </button>
+                </div>
+                <pre id="report-content" class="report-content hidden"></pre>
+            </div>
+        </section>
+    </main>
 </div>
 
+<!-- Edit Slot Modal -->
 <div id="edit-slot-modal" class="modal-backdrop hidden" aria-hidden="true">
-    <section class="modal-dialog" role="dialog" aria-modal="true"
-             aria-labelledby="edit-slot-title">
-        <button class="modal-close-btn" type="button" aria-label="Close edit appointment time form"
-                data-close-edit-slot>&times;</button>
+    <section class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-slot-title">
+        <button class="modal-close-btn" type="button" aria-label="Close" data-close-edit-slot>
+            <span class="material-symbols-outlined">close</span>
+        </button>
         <header class="modal-header">
-            <h2 id="edit-slot-title">Edit Appointment Time</h2>
+            <h2 id="edit-slot-title">
+                <span class="material-symbols-outlined">edit_calendar</span>
+                Edit Appointment Time
+            </h2>
         </header>
         <form class="modal-body" id="edit-slot-form" method="post">
             <div class="form-group">
@@ -256,12 +534,15 @@
                 <label class="form-label" for="edit-slot-time">Time</label>
                 <input class="form-input" id="edit-slot-time" name="time" type="time" required>
             </div>
-            <button class="btn btn-primary btn-block" type="submit">Save Appointment Time</button>
+            <button class="btn btn-primary btn-block" type="submit">
+                <span class="material-symbols-outlined">save</span>
+                Save Changes
+            </button>
         </form>
     </section>
 </div>
 {% endblock %}
-
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/staff-dashboard.js') }}"></script>
 {% endblock %}

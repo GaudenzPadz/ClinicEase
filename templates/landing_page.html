@@ -1,13 +1,12 @@
 {% extends "base.html" %}
-
 {% block title %}ClinicEase - Healthcare Appointment System{% endblock %}
-
 {% block page_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="container">
+    <!-- Hero Section -->
     <section class="hero-section">
         <span class="badge-pill">Centralized Clinic Scheduling</span>
         <h1 class="hero-title">Simple, transparent clinic appointments for everyone.</h1>
@@ -21,26 +20,24 @@
     </section>
 </div>
 
+<!-- How it Works Section -->
 <section class="section-block">
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">How ClinicEase Works</h2>
             <p class="section-subtitle">A clear process for patients and clinic staff.</p>
         </div>
-
         <div class="grid-3">
             <article class="card">
                 <div class="step-num">1</div>
                 <h3>Browse Available Slots</h3>
                 <p>Choose from appointment times made available by clinic staff.</p>
             </article>
-
             <article class="card">
                 <div class="step-num">2</div>
                 <h3>Submit Booking Request</h3>
                 <p>Tell us the reason for your visit. A contact number is optional.</p>
             </article>
-
             <article class="card">
                 <div class="step-num">3</div>
                 <h3>Track Status Updates</h3>
@@ -50,29 +47,26 @@
     </div>
 </section>
 
+<!-- Status Lifecycle Section -->
 <div class="container">
     <section class="status-section">
         <div class="section-header">
             <h2 class="section-title">Appointment Status Lifecycle</h2>
             <p class="section-subtitle">Each status is shown with a label and a distinct color.</p>
         </div>
-
         <div class="grid-4">
             <article class="card status-card">
                 <span class="badge-pending">Pending</span>
                 <p>Awaiting staff review</p>
             </article>
-
             <article class="card status-card">
                 <span class="badge-confirmed">Confirmed</span>
                 <p>Approved by clinic staff</p>
             </article>
-
             <article class="card status-card">
                 <span class="badge-completed">Completed</span>
                 <p>Clinic visit completed</p>
             </article>
-
             <article class="card status-card">
                 <span class="badge-cancelled">Cancelled</span>
                 <p>Request was not approved</p>

@@ -6,7 +6,7 @@ class Appointment:
     VALID_STATUSES = ["Pending", "Confirmed", "Cancelled", "Completed"]
     ALLOWED_TRANSITIONS = {
         "Pending": {"Confirmed", "Cancelled"},
-        "Confirmed": {"Completed"},
+        "Confirmed": {"Completed", "Cancelled"},
         "Cancelled": set(),
         "Completed": set(),
     }
@@ -54,8 +54,8 @@ class Appointment:
         self.status = "Confirmed"
 
     def cancel(self):
-        if self.__status != "Pending":
-            raise ValueError("Only Pending appointments can be cancelled.")
+        if self.__status not in ("Pending", "Confirmed"):
+            raise ValueError("Only Pending or Confirmed appointments can be cancelled.")
         self.status = "Cancelled"
 
     def complete(self):

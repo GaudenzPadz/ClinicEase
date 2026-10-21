@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 import secrets
 
@@ -27,9 +27,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("CLINICEASE_SECRET_KEY") or secrets.token_hex(32)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = (
-    os.getenv("CLINICEASE_HTTPS", "").strip().lower() in {"1", "true", "yes"}
-)
+app.config["SESSION_COOKIE_SECURE"] = os.getenv(
+    "CLINICEASE_HTTPS", ""
+).strip().lower() in {"1", "true", "yes"}
 if not os.getenv("CLINICEASE_SECRET_KEY"):
     app.logger.warning(
         "CLINICEASE_SECRET_KEY is unset; sessions will not persist across restarts."
@@ -67,17 +67,19 @@ def available_registration_slots():
 
 
 def render_auth_page(
-    active_tab="",
+    page="login",
     error=None,
     message=None,
     form_data=None,
     status_code=200,
 ):
-    slots, slots_error = available_registration_slots()
+    template = "register.html" if page == "register" else "login.html"
+    slots, slots_error = (
+        available_registration_slots() if page == "register" else ([], None)
+    )
     return (
         render_template(
-            "login.html",
-            active_tab=active_tab,
+            template,
             error=error,
             message=message,
             form_data=form_data or {},
@@ -146,14 +148,16 @@ def login_page():
     if request.method == "GET":
         if "role" in session:
             return redirect(url_for("dashboard"))
-        return render_auth_page()
+        return render_auth_page(page="login")
 
     email = request.form.get("email")
     password = request.form.get("password")
 
-    is_valid, err = ValidationService.validate_login({"email": email, "password": password})
+    is_valid, err = ValidationService.validate_login(
+        {"email": email, "password": password}
+    )
     if not is_valid:
-        return render_auth_page(error=err, status_code=400)
+        return render_auth_page(page="login", error=err, status_code=400)
 
     user_obj = User.login(email, password)
     if user_obj:
@@ -164,7 +168,9 @@ def login_page():
         session["contact_number"] = user_obj.contact_number
         return redirect(url_for("dashboard"))
 
-    return render_auth_page(error="Invalid email or password.", status_code=401)
+    return render_auth_page(
+        page="login", error="Invalid email or password.", status_code=401
+    )
 
 
 @app.route("/signup", methods=["GET"])
@@ -173,14 +179,14 @@ def register_page():
     if request.method == "GET":
         if "role" in session:
             return redirect(url_for("dashboard"))
-        return render_auth_page(active_tab="create")
+        return render_auth_page(page="register")
 
     form_data = request.form.to_dict()
     try:
         result = create_initial_request(form_data)
     except InitialRequestError as error:
         return render_auth_page(
-            active_tab="create",
+            page="register",
             error=str(error),
             form_data=form_data,
             status_code=error.status_code,
@@ -188,7 +194,7 @@ def register_page():
     except Exception:
         app.logger.exception("Failed to create initial patient request.")
         return render_auth_page(
-            active_tab="create",
+            page="register",
             error="The account and appointment request could not be saved. Please try again.",
             form_data=form_data,
             status_code=500,
@@ -205,7 +211,10 @@ def register_page():
 def logout():
     session.clear()
     if request.is_json or request.path.startswith("/api/"):
-        return jsonify({"status": "success", "message": "Logged out successfully."}), 200
+        return (
+            jsonify({"status": "success", "message": "Logged out successfully."}),
+            200,
+        )
     return redirect(url_for("home"))
 
 
@@ -292,8 +301,7 @@ def staff_dashboard_view():
         slots = dashboard_service.get_slots()
 
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT a.appointment_id, a.purpose, a.status, a.created_at,
                    u.name as patient_name, u.email, a.contact_number,
                    s.slot_date, s.time
@@ -302,11 +310,9 @@ def staff_dashboard_view():
             JOIN appointment_slots s ON a.slot_id = s.slot_id
             WHERE a.status = 'Pending'
             ORDER BY a.created_at ASC
-            """
-        )
+            """)
         pending_appointments = cursor.fetchall()
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT a.appointment_id, a.purpose, a.status, a.created_at,
                    u.name as patient_name, u.email, a.contact_number,
                    s.slot_date, s.time
@@ -315,8 +321,7 @@ def staff_dashboard_view():
             JOIN appointment_slots s ON a.slot_id = s.slot_id
             WHERE a.status = 'Confirmed'
             ORDER BY s.slot_date ASC, s.time ASC
-            """
-        )
+            """)
         confirmed_appointments = cursor.fetchall()
         cursor.close()
 
@@ -327,9 +332,9 @@ def staff_dashboard_view():
                     slot["time"], "%I:%M %p"
                 ).strftime("%H:%M")
             except ValueError:
-                slot["time_input"] = datetime.strptime(
-                    slot["time"], "%H:%M"
-                ).strftime("%H:%M")
+                slot["time_input"] = datetime.strptime(slot["time"], "%H:%M").strftime(
+                    "%H:%M"
+                )
 
         user = {
             "name": session.get("name", "Clinic Staff"),
@@ -342,6 +347,9 @@ def staff_dashboard_view():
             pending_appointments=pending_appointments,
             confirmed_appointments=confirmed_appointments,
             today=date.today(),
+            calendar_days=[
+                date.today() + timedelta(days=offset) for offset in range(15)
+            ],
         )
     finally:
         conn.close()
@@ -456,13 +464,18 @@ def get_dashboard_slots():
     role = session.get("role")
     if not role:
         return (
-            jsonify({"status": "error", "message": "Unauthorized. Please log in first."}),
+            jsonify(
+                {"status": "error", "message": "Unauthorized. Please log in first."}
+            ),
             401,
         )
 
     conn = get_connection()
     if not conn:
-        return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        return (
+            jsonify({"status": "error", "message": "Database connection failed"}),
+            500,
+        )
 
     try:
         dashboard_service = DashboardFactory.create_dashboard(role, conn)
@@ -481,7 +494,12 @@ def book_appointment_slot():
 
     if not patient_id or session.get("role") != "Patient":
         return (
-            jsonify({"status": "error", "message": "Unauthorized. Please log in as a patient."}),
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Unauthorized. Please log in as a patient.",
+                }
+            ),
             401,
         )
 
@@ -493,14 +511,15 @@ def book_appointment_slot():
     purpose = data.get("purpose")
     contact_number = data.get("contact_number")
     contact_number = (
-        (contact_number.strip() or None)
-        if isinstance(contact_number, str)
-        else None
+        (contact_number.strip() or None) if isinstance(contact_number, str) else None
     )
 
     conn = get_connection()
     if not conn:
-        return jsonify({"status": "error", "message": "Database connection failed"}), 500
+        return (
+            jsonify({"status": "error", "message": "Database connection failed"}),
+            500,
+        )
 
     cursor = None
     try:
@@ -648,6 +667,153 @@ def get_pending_appointments():
         conn.close()
 
 
+@app.route("/api/staff/dashboard/stats", methods=["GET"])
+def get_staff_dashboard_stats():
+    if session.get("role") != "Clinic Staff":
+        return jsonify({"status": "error", "message": "Unauthorized."}), 401
+
+    conn = get_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "Database connection failed."}), 500
+
+    cursor = None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT status, COUNT(*) AS count
+            FROM appointments
+            GROUP BY status
+            """
+        )
+        status_counts = {
+            "Pending": 0,
+            "Confirmed": 0,
+            "Completed": 0,
+            "Cancelled": 0,
+        }
+        for row in cursor.fetchall():
+            status_counts[row["status"]] = row["count"]
+
+        cursor.execute(
+            """
+            SELECT DAYOFWEEK(s.slot_date) AS weekday_index, COUNT(*) AS count
+            FROM appointments AS a
+            JOIN appointment_slots AS s ON s.slot_id = a.slot_id
+            WHERE s.slot_date BETWEEN CURRENT_DATE
+                AND DATE_ADD(CURRENT_DATE, INTERVAL 6 DAY)
+              AND a.status != 'Cancelled'
+            GROUP BY DAYOFWEEK(s.slot_date)
+            """
+        )
+        bookings_by_weekday = {
+            row["weekday_index"]: row["count"] for row in cursor.fetchall()
+        }
+        today = date.today()
+        weekly_bookings = [
+            {
+                "day": (today + timedelta(days=offset)).strftime("%a"),
+                "count": bookings_by_weekday.get(
+                    ((today + timedelta(days=offset)).isoweekday() % 7) + 1,
+                    0,
+                ),
+            }
+            for offset in range(7)
+        ]
+
+        cursor.execute(
+            """
+            SELECT COUNT(*) AS count
+            FROM appointment_slots
+            WHERE status = 'Available'
+              AND slot_date BETWEEN CURRENT_DATE
+                  AND DATE_ADD(CURRENT_DATE, INTERVAL 6 DAY)
+            """
+        )
+        available_slots_next_7_days = cursor.fetchone()["count"]
+
+        cursor.execute(
+            """
+            SELECT
+                SUM(CASE WHEN a.status = 'Pending'
+                    AND a.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
+                    THEN 1 ELSE 0 END) AS recent_pending,
+                SUM(CASE WHEN a.status = 'Pending'
+                    AND a.created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 14 DAY)
+                    AND a.created_at < DATE_SUB(CURRENT_DATE, INTERVAL 7 DAY)
+                    THEN 1 ELSE 0 END) AS previous_pending,
+                SUM(CASE WHEN s.slot_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+                    AND s.slot_date < DATE_ADD(LAST_DAY(CURRENT_DATE), INTERVAL 1 DAY)
+                    THEN 1 ELSE 0 END) AS total_appointments_this_month,
+                SUM(CASE WHEN a.status = 'Completed'
+                    AND s.slot_date >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+                    AND s.slot_date < DATE_ADD(LAST_DAY(CURRENT_DATE), INTERVAL 1 DAY)
+                    THEN 1 ELSE 0 END) AS completed_this_month,
+                SUM(CASE WHEN a.status = 'Confirmed'
+                    AND s.slot_date BETWEEN
+                        DATE_SUB(CURRENT_DATE, INTERVAL WEEKDAY(CURRENT_DATE) DAY)
+                        AND DATE_ADD(
+                            DATE_SUB(CURRENT_DATE, INTERVAL WEEKDAY(CURRENT_DATE) DAY),
+                            INTERVAL 6 DAY
+                        )
+                    THEN 1 ELSE 0 END) AS confirmed_this_week
+            FROM appointments AS a
+            JOIN appointment_slots AS s ON s.slot_id = a.slot_id
+            """
+        )
+        summary = cursor.fetchone()
+        recent_pending = int(summary["recent_pending"] or 0)
+        previous_pending = int(summary["previous_pending"] or 0)
+        total_appointments_this_month = int(
+            summary["total_appointments_this_month"] or 0
+        )
+        completed_this_month = int(summary["completed_this_month"] or 0)
+        confirmed_this_week = int(summary["confirmed_this_week"] or 0)
+        if recent_pending > previous_pending:
+            pending_trend = "up"
+        elif recent_pending < previous_pending:
+            pending_trend = "down"
+        else:
+            pending_trend = "flat"
+
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "status_counts": status_counts,
+                    "weekly_bookings": weekly_bookings,
+                    "available_slots_next_7_days": int(
+                        available_slots_next_7_days or 0
+                    ),
+                    "total_appointments_this_month": total_appointments_this_month,
+                    "completed_this_month": completed_this_month,
+                    "confirmed_this_week": confirmed_this_week,
+                    "pending_trend": {
+                        "direction": pending_trend,
+                        "recent": recent_pending,
+                        "previous": previous_pending,
+                    },
+                }
+            ),
+            200,
+        )
+    except Exception:
+        app.logger.exception("Failed to load staff dashboard statistics.")
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Dashboard statistics could not be loaded.",
+                }
+            ),
+            500,
+        )
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conn.close()
+
+
 @app.route("/api/staff/blocked_dates", methods=["POST"])
 def create_blocked_date():
     if session.get("role") != "Clinic Staff":
@@ -695,7 +861,10 @@ def create_blocked_date():
 
     conn = get_connection()
     if not conn:
-        return jsonify({"status": "error", "message": "Database connection failed."}), 500
+        return (
+            jsonify({"status": "error", "message": "Database connection failed."}),
+            500,
+        )
 
     cursor = None
     try:
@@ -954,7 +1123,10 @@ def manage_staff_slot(slot_id):
     action = data.get("action")
     conn = get_connection()
     if not conn:
-        return jsonify({"status": "error", "message": "Database connection failed."}), 500
+        return (
+            jsonify({"status": "error", "message": "Database connection failed."}),
+            500,
+        )
 
     cursor = conn.cursor(dictionary=True)
     try:
@@ -1043,7 +1215,10 @@ def manage_staff_slot(slot_id):
                     409,
                 )
             conn.commit()
-            return jsonify({"status": "success", "message": "Appointment time updated."}), 200
+            return (
+                jsonify({"status": "success", "message": "Appointment time updated."}),
+                200,
+            )
 
         if request.method == "DELETE" and action == "delete":
             cursor.execute(
@@ -1069,7 +1244,10 @@ def manage_staff_slot(slot_id):
                     409,
                 )
             conn.commit()
-            return jsonify({"status": "success", "message": "Appointment time removed."}), 200
+            return (
+                jsonify({"status": "success", "message": "Appointment time removed."}),
+                200,
+            )
 
         if request.method == "PATCH" and action in ("enable", "disable"):
             new_status = "Available" if action == "enable" else "Disabled"
@@ -1092,7 +1270,10 @@ def manage_staff_slot(slot_id):
                     conn.rollback()
                     return (
                         jsonify(
-                            {"status": "error", "message": "Appointment time not found."}
+                            {
+                                "status": "error",
+                                "message": "Appointment time not found.",
+                            }
                         ),
                         404,
                     )
@@ -1160,16 +1341,14 @@ def get_staff_appointment_report():
 
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT a.appointment_id, a.purpose, a.status, u.name as patient_name,
                    s.slot_date, s.time
             FROM appointments a
             JOIN users u ON a.user_id = u.user_id
             JOIN appointment_slots s ON a.slot_id = s.slot_id
             ORDER BY a.appointment_id ASC
-            """
-        )
+            """)
         appointments = cursor.fetchall()
 
         report_generator = generate_appointment_report(appointments)
@@ -1190,5 +1369,88 @@ def get_staff_appointment_report():
         conn.close()
 
 
+@app.route("/api/patient/appointments/<int:appt_id>/cancel", methods=["POST"])
+def patient_cancel_appointment(appt_id):
+    if session.get("role") != "Patient":
+        return jsonify({"status": "error", "message": "Unauthorized."}), 401
+
+    conn = get_connection()
+    if not conn:
+        return jsonify({"status": "error", "message": "DB failed"}), 500
+
+    cursor = conn.cursor(dictionary=True)
+    try:
+        # Verify this appointment belongs to the logged-in patient
+        cursor.execute(
+            """
+            SELECT a.*, s.slot_id, s.slot_date, s.time, s.status as slot_status
+            FROM appointments a
+            JOIN appointment_slots s ON a.slot_id = s.slot_id
+            WHERE a.appointment_id = %s AND a.user_id = %s
+            """,
+            (appt_id, session.get("user_id")),
+        )
+        appt_data = cursor.fetchone()
+
+        if not appt_data:
+            return (
+                jsonify({"status": "error", "message": "Appointment not found."}),
+                404,
+            )
+
+        # Only allow cancelling Pending or Confirmed appointments
+        if appt_data["status"] not in ("Pending", "Confirmed"):
+            return (
+                jsonify(
+                    {
+                        "status": "error",
+                        "message": f"Cannot cancel an appointment with status '{appt_data['status']}'.",
+                    }
+                ),
+                400,
+            )
+
+        # Update appointment status
+        cursor.execute(
+            "UPDATE appointments SET status = 'Cancelled' WHERE appointment_id = %s",
+            (appt_id,),
+        )
+
+        # Release the slot back to Available (only if it was Booked)
+        if appt_data["slot_status"] == "Booked":
+            cursor.execute(
+                "UPDATE appointment_slots SET status = 'Available' WHERE slot_id = %s",
+                (appt_data["slot_id"],),
+            )
+
+        conn.commit()
+
+        return (
+            jsonify(
+                {"status": "success", "message": "Appointment cancelled successfully."}
+            ),
+            200,
+        )
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 if __name__ == "__main__":
+    try:
+        inserted_count = CalendarSlotService().generate_upcoming_slots(days_ahead=30)
+        app.logger.info(
+            "Generated %s appointment slots for the next 30 days.",
+            inserted_count,
+        )
+    except Exception:
+        app.logger.exception(
+            "Could not generate appointment slots at startup; "
+            "the server will continue without new slots."
+        )
+
     app.run(debug=True, port=5000)

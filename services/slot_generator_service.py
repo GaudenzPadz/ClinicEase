@@ -1,7 +1,7 @@
 import calendar
 from abc import ABC, abstractmethod
 from datetime import date, datetime, time, timedelta
-from typing import Iterable, List, Union
+from typing import Callable, Iterable, List, Optional, Union
 
 from database import get_connection
 
@@ -79,13 +79,12 @@ class CalendarSlotService:
 
     def __init__(
         self,
-        connection_factory=None,
-        strategy: SlotGenerationStrategy = None,
+        connection_factory: Optional[Callable] = None,
+        strategy: Optional[SlotGenerationStrategy] = None,
         strategy_name: str = "standard_30_min",
-        today_provider=None,
+        today_provider: Optional[Callable[[], date]] = None,
     ):
         self.connection_factory = connection_factory or get_connection
-        # Strategy selection stays behind the factory; callers can inject a strategy in tests.
         self.strategy = strategy or SlotGeneratorFactory.create(strategy_name)
         self.today_provider = today_provider or date.today
 
@@ -97,14 +96,24 @@ class CalendarSlotService:
         if not 2000 <= year <= 9999:
             raise ValueError("Year must be between 2000 and 9999.")
 
-        last_day = calendar.monthrange(year, month)[1]
         month_start = date(year, month, 1)
-        month_end = date(year, month, last_day)
+        month_end = date(year, month, calendar.monthrange(year, month)[1])
         today = self.today_provider()
         if month_end < today:
             raise ValueError("Appointment slots cannot be generated for a past month.")
-        first_generation_day = max(month_start, today)
 
+        return self._generate_slots_for_range(max(month_start, today), month_end)
+
+    def generate_upcoming_slots(self, days_ahead: int = 30) -> int:
+        """Generate missing slots for today and the following days."""
+        if isinstance(days_ahead, bool) or not isinstance(days_ahead, int) or days_ahead < 1:
+            raise ValueError("days_ahead must be a positive integer.")
+
+        start_date = self.today_provider()
+        end_date = start_date + timedelta(days=days_ahead - 1)
+        return self._generate_slots_for_range(start_date, end_date)
+
+    def _generate_slots_for_range(self, start_date: date, end_date: date) -> int:
         conn = self.connection_factory()
         if not conn:
             raise RuntimeError("Database connection failed while generating slots.")
@@ -133,11 +142,9 @@ class CalendarSlotService:
                 FROM blocked_dates
                 WHERE blocked_date BETWEEN %s AND %s
                 """,
-                (month_start, month_end),
+                (start_date, end_date),
             )
-            blocked_dates = {
-                row["blocked_date"] for row in cursor.fetchall()
-            }
+            blocked_dates = {row["blocked_date"] for row in cursor.fetchall()}
 
             schedules_by_weekday = {}
             for schedule in schedule_rows:
@@ -147,8 +154,8 @@ class CalendarSlotService:
                 schedules_by_weekday.setdefault(weekday, []).append(schedule)
 
             inserted_count = 0
-            current_date = first_generation_day
-            while current_date <= month_end:
+            current_date = start_date
+            while current_date <= end_date:
                 if (
                     current_date not in blocked_dates
                     and current_date.weekday() in schedules_by_weekday

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClinicEase: Appointment System</title>
+<style>
+/* =========================================================
+   1. DESIGN TOKENS (your palette, unchanged)
+   ========================================================= */
+:root{
+  --color-sage:#4A6B52; --color-sage-hover:#3F5A47; --color-sage-pale:#E5EEC5;
+  --color-cream:#F2F0E1; --color-forest:#26402E; --color-forest-muted:#46554A;
+  --color-white:#FFFFFF; --color-border:#D9E0D7; --color-border-input:#57705D;
+  --status-pending-bg:#FFF126;   --status-pending-text:#734A00;
+  --status-confirmed-bg:#DDF0FF; --status-confirmed-text:#154C83;
+  --status-completed-bg:#E2F2E7; --status-completed-text:#1B5C37;
+  --status-cancelled-bg:#FCD8D8; --status-cancelled-text:#8B2121;
+  --radius:18px; --header-h:64px;
+  --font:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}      /* presentation behaviour: one slide per scroll */
+body{font-family:var(--font);background:var(--color-cream);color:var(--color-forest);line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--color-sage);outline-offset:3px;border-radius:6px}
+
+/* =========================================================
+   2. HEADER (sticky, same links as your skeleton)
+   ========================================================= */
+.site-header{position:fixed;top:0;left:0;right:0;height:var(--header-h);z-index:50;
+  display:flex;align-items:center;justify-content:space-between;padding:0 clamp(16px,4vw,48px);
+  background:rgba(242,240,225,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--color-border)}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-icon{width:38px;height:38px;border-radius:11px;background:var(--color-sage);color:var(--color-white);
+  display:grid;place-items:center;font-weight:800;font-size:.95rem;letter-spacing:.5px}
+.brand-text strong{display:block;font-size:1.02rem;line-height:1.1}
+.brand-text span{font-size:.74rem;color:var(--color-forest-muted)}
+.nav{display:flex;gap:10px;align-items:center}
+.btn{white-space:nowrap;display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;font-weight:700;
+  font-size:.95rem;text-decoration:none;border:2px solid var(--color-sage);transition:transform .15s,background .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:var(--color-sage);color:var(--color-white)}
+.btn-primary:hover{background:var(--color-sage-hover);border-color:var(--color-sage-hover)}
+.btn-ghost{background:transparent;color:var(--color-sage)}
+.btn-ghost:hover{background:var(--color-sage-pale)}
+.btn-light{background:var(--color-cream);color:var(--color-forest);border-color:var(--color-cream)}
+.btn-outline-light{background:transparent;color:var(--color-cream);border-color:var(--color-cream)}
+
+/* =========================================================
+   3. SLIDE BASE (every section is one full-screen slide)
+   ========================================================= */
+.slide{min-height:100vh;min-height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:calc(var(--header-h) + 32px) clamp(20px,7vw,110px) 56px;position:relative;overflow:hidden}
+.slide.dark{background:var(--color-forest);color:var(--color-cream)}
+.slide.pale{background:var(--color-sage-pale)}
+.inner{max-width:1120px;width:100%;margin:0 auto;position:relative;z-index:1}
+.eyebrow{display:inline-block;font-size:.8rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--color-sage);margin-bottom:14px}
+.dark .eyebrow{color:var(--color-sage-pale)}
+h1{font-size:clamp(2.4rem,6vw,4.6rem);line-height:1.04;letter-spacing:-.03em;font-weight:800}
+h2{font-size:clamp(1.9rem,4vw,3rem);line-height:1.1;letter-spacing:-.02em;font-weight:800;margin-bottom:12px}
+.lead{font-size:clamp(1.02rem,1.6vw,1.25rem);color:var(--color-forest-muted);max-width:660px}
+.dark .lead{color:#C9CFBF}
+.slide-num{position:absolute;right:clamp(20px,5vw,60px);bottom:22px;font-size:.8rem;font-weight:700;
+  color:var(--color-forest-muted);letter-spacing:.1em}
+.dark .slide-num{color:#C9CFBF}
+
+/* decorative blobs for a modern feel */
+.blob{position:absolute;border-radius:50%;filter:blur(2px);z-index:0;pointer-events:none}
+.blob.a{width:520px;height:520px;right:-140px;top:-120px;background:var(--color-sage-pale)}
+.blob.b{width:300px;height:300px;right:12%;bottom:-120px;background:var(--color-sage);opacity:.15}
+.dark .blob.a{background:var(--color-sage);opacity:.25}
+
+/* =========================================================
+   4. CARDS + GRIDS
+   ========================================================= */
+.grid{display:grid;gap:18px;margin-top:34px}
+.g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)} .g5{grid-template-columns:repeat(5,1fr)}
+.card{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius);padding:26px;
+  box-shadow:0 10px 30px -18px rgba(38,64,46,.35);transition:transform .2s}
+.card:hover{transform:translateY(-4px)}
+.card h3{font-size:1.15rem;margin-bottom:8px}
+.card p,.card li{color:var(--color-forest-muted);font-size:.97rem}
+.card ul{list-style:none;display:grid;gap:8px;margin-top:10px}
+.card li::before{content:"✓";color:var(--color-sage);font-weight:800;margin-right:8px}
+.card li.no::before{content:"✕";color:var(--status-cancelled-text)}
+.dark .card{background:rgba(242,240,225,.07);border-color:rgba(242,240,225,.18);box-shadow:none}
+.dark .card p,.dark .card li{color:#C9CFBF}
+.dark .card li::before{color:var(--color-sage-pale)}
+.icon{width:46px;height:46px;border-radius:14px;background:var(--color-sage-pale);color:var(--color-forest);display:grid;place-items:center;
+  margin-bottom:14px}
+.dark .icon{background:var(--color-sage);color:var(--color-cream)}
+.icon svg{width:22px;height:22px;stroke-width:2;stroke:currentColor;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.numbadge{width:46px;height:46px;border-radius:50%;background:var(--color-sage);color:var(--color-white);
+  display:grid;place-items:center;font-weight:800;font-size:1.2rem;margin-bottom:14px}
+
+/* =========================================================
+   5. HERO SLIDE
+   ========================================================= */
+.badge{display:inline-flex;gap:8px;align-items:center;padding:7px 16px;border-radius:999px;background:var(--color-sage-pale);
+  color:var(--color-forest);font-weight:700;font-size:.85rem;margin-bottom:24px;border:1px solid var(--color-border)}
+.badge i{width:8px;height:8px;border-radius:50%;background:var(--color-sage)}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:32px}
+.hero h1 em{font-style:normal;color:var(--color-sage)}
+.hero .lead{margin-top:22px}
+.mock{background:var(--color-white);border:1px solid var(--color-border);border-radius:24px;padding:22px;
+  box-shadow:0 30px 60px -28px rgba(38,64,46,.5);transform:rotate(1.5deg)}
+.mock-head{display:flex;justify-content:space-between;font-weight:800;margin-bottom:14px}
+.mock-head span{font-size:.78rem;color:var(--color-forest-muted);font-weight:600}
+.slot{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border:1px solid var(--color-border);
+  border-radius:12px;margin-top:10px;font-size:.93rem}
+.slot b{display:block}.slot small{color:var(--color-forest-muted)}
+.tag{padding:4px 12px;border-radius:999px;font-size:.78rem;font-weight:800;white-space:nowrap}
+.tag.pending{background:var(--status-pending-bg);color:var(--status-pending-text)}
+.tag.confirmed{background:var(--status-confirmed-bg);color:var(--status-confirmed-text)}
+.tag.completed{background:var(--status-completed-bg);color:var(--status-completed-text)}
+.tag.cancelled{background:var(--status-cancelled-bg);color:var(--status-cancelled-text)}
+.tag.avail{background:var(--color-sage-pale);color:var(--color-forest)}
+.scroll-hint{margin-top:40px;font-size:.85rem;color:var(--color-forest-muted);font-weight:600}
+
+/* =========================================================
+   6. STATUS LIFECYCLE
+   ========================================================= */
+.flow{display:flex;align-items:center;gap:14px;margin-top:40px}
+.flow>.status-card,.flow>.branch{flex:1 1 0;min-width:0}
+.flow .arrow{font-size:1.6rem;color:var(--color-sage);font-weight:800}
+.status-card{background:var(--color-white);border:1px solid var(--color-border);border-radius:var(--radius);padding:22px 26px;min-width:0}
+.status-card .tag{font-size:1rem;padding:6px 18px}
+.status-card p{margin-top:10px;font-size:.9rem;color:var(--color-forest-muted)}
+.branch{display:grid;gap:14px}
+.note{margin-top:26px;font-size:.95rem;color:var(--color-forest-muted);max-width:760px}
+
+/* =========================================================
+   7. OOP SLIDE (class tree)
+   ========================================================= */
+.tree{display:grid;justify-items:center;gap:14px;margin-top:30px}
+.node{padding:12px 24px;border-radius:12px;font-weight:800;font-family:ui-monospace,Consolas,monospace;
+  background:var(--color-cream);color:var(--color-forest);font-size:.95rem}
+.node.root{background:var(--color-sage-pale)}
+.kids{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.line{width:2px;height:18px;background:var(--color-sage-pale)}
+.small-code{font-family:ui-monospace,Consolas,monospace;font-size:.85rem;color:var(--color-sage-pale)}
+
+/* =========================================================
+   8. SIDE DOT NAVIGATION + FOOTER
+   ========================================================= */
+.dots{position:fixed;right:clamp(10px,2vw,24px);top:50%;transform:translateY(-50%);display:grid;gap:12px;z-index:60}
+.dots a{width:12px;height:12px;border-radius:50%;border:2px solid var(--color-sage);background:transparent;display:block;transition:.2s}
+.dots a.on{background:var(--color-sage);transform:scale(1.3)}
+body.on-dark .dots a{border-color:var(--color-sage-pale)}
+body.on-dark .dots a.on{background:var(--color-sage-pale)}
+.footer{margin-top:44px;padding-top:22px;border-top:1px solid rgba(242,240,225,.2);font-size:.88rem;color:#C9CFBF;display:grid;gap:4px}
+.footer strong{color:var(--color-cream)}
+
+/* =========================================================
+   9. RESPONSIVE
+   ========================================================= */
+@media(max-width:900px){
+  html{scroll-snap-type:y proximity}                          /* tall slides on phones must not trap scrolling */
+  .hero-grid,.g3,.g2,.g4,.g5{grid-template-columns:1fr}
+  .mock{transform:none}.dots{display:none}.brand-text span{display:none}
+  .nav .btn{padding:9px 14px;font-size:.85rem}
+  .flow{flex-direction:column;align-items:stretch}.flow .arrow{transform:rotate(90deg);text-align:center}
+  .brand-text{display:none}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn,.card{transition:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="site-header">
+  <a class="brand" href="#hero" aria-label="ClinicEase home">
+    <span class="brand-icon">CE</span>
+    <span class="brand-text"><strong>ClinicEase</strong><span>Appointment System</span></span>
+  </a>
+  <nav class="nav" aria-label="Main">
+    <a class="btn btn-ghost" href="/login">Sign In</a>
+    <a class="btn btn-primary" href="/register">Book Appointment</a>
+  </nav>
+</header>
+
+<!-- ============ SLIDE 1: HERO ============ -->
+<section class="slide hero" id="hero" data-title="Welcome">
+  <div class="blob a"></div><div class="blob b"></div>
+  <div class="inner hero-grid">
+    <div>
+      <span class="badge"><i></i>Centralized Clinic Scheduling</span>
+      <h1>Simple, transparent clinic <em>appointments</em> for everyone.</h1>
+      <p class="lead">ClinicEase streamlines healthcare scheduling for patients and clinic staff. Select an available time slot, submit your request, and track appointment updates in real time.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/register">Book an Appointment</a>
+        <a class="btn btn-ghost" href="/login">Sign In to Account</a>
+      </div>
+      <p class="scroll-hint">Scroll or press ↓ to see how it works</p>
+    </div>
+    <!-- decorative preview of the slot list -->
+    <div class="mock" aria-hidden="true">
+      <div class="mock-head">Available Slots <span>October 12</span></div>
+      <div class="slot"><div><b>9:00 AM</b><small>October 12</small></div><span class="tag avail">Available</span></div>
+      <div class="slot"><div><b>9:30 AM</b><small>October 12</small></div><span class="tag avail">Available</span></div>
+      <div class="slot"><div><b>10:00 AM</b><small>October 12</small></div><span class="tag pending">Pending</span></div>
+      <div class="slot"><div><b>10:30 AM</b><small>October 12</small></div><span class="tag avail">Available</span></div>
+    </div>
+  </div>
+  <span class="slide-num">01 / 09</span>
+</section>
+
+<!-- ============ SLIDE 2: PROBLEM ============ -->
+<section class="slide" id="problem" data-title="Problem">
+  <div class="inner">
+    <span class="eyebrow">The Problem</span>
+    <h2>Manual appointments are hard to manage.</h2>
+    <p class="lead">Small clinics still rely on calls, visits, and informal records. Five problems follow from that.</p>
+    <div class="grid g5">
+      <!-- Phone Call SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </div>
+        <h3>Manual requests</h3>
+        <p>Patients must contact or visit the clinic.</p>
+      </div>
+      <!-- Eye / Limited Visibility SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+        <h3>Limited visibility</h3>
+        <p>Open dates and times are hard to see.</p>
+      </div>
+      <!-- Folder / Disorganized Info SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+        </div>
+        <h3>Disorganized info</h3>
+        <p>Staff struggle to keep records updated.</p>
+      </div>
+      <!-- Alert Triangle / Conflicts SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h3>Conflicts</h3>
+        <p>Several patients may request one slot.</p>
+      </div>
+      <!-- Help Circle / Unclear Status SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h3>Unclear status</h3>
+        <p>Patients don't know where a request stands.</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">02 / 09</span>
+</section>
+
+<!-- ============ SLIDE 3: SOLUTION ============ -->
+<section class="slide dark" id="solution" data-title="Solution">
+  <div class="blob a"></div>
+  <div class="inner">
+    <span class="eyebrow">The Solution</span>
+    <h2>One web system for the whole clinic.</h2>
+    <p class="lead">ClinicEase centralizes slots, requests, and statuses so patients and staff see the same up-to-date picture.</p>
+    <div class="grid g4">
+      <!-- Calendar SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        </div>
+        <h3>See slots</h3>
+        <p>Slot availability is easy to see.</p>
+      </div>
+      <!-- Lock / One per slot SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h3>One per slot</h3>
+        <p>Each slot goes to only one appointment.</p>
+      </div>
+      <!-- Compass / Right screens SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+        </div>
+        <h3>Right screens</h3>
+        <p>Patients and staff each get what they need.</p>
+      </div>
+      <!-- Check Circle / Clear actions SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        </div>
+        <h3>Clear actions</h3>
+        <p>Important actions stay clear and predictable.</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">03 / 09</span>
+</section>
+
+<!-- ============ SLIDE 4: ROLES ============ -->
+<section class="slide" id="roles" data-title="Users">
+  <div class="inner">
+    <span class="eyebrow">Who Uses It</span>
+    <h2>Two roles, one website.</h2>
+    <p class="lead">After login, the system opens the dashboard that matches the user's role.</p>
+    <div class="grid g2">
+      <div class="card">
+        <!-- User SVG -->
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <h3>Patient</h3>
+        <ul>
+          <li>Log in and view available slots</li>
+          <li>Select a date and time, enter details</li>
+          <li>Submit an appointment request</li>
+          <li>View own appointments and status</li>
+        </ul>
+      </div>
+      <div class="card">
+        <!-- Stethoscope / Staff SVG -->
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M4.8 2.3A.3.3 0 0 0 4.5 2h-1a.3.3 0 0 0-.3.3V7a6 6 0 0 0 12 0V2.3a.3.3 0 0 0-.3-.3h-1a.3.3 0 0 0-.3.3V7a4 4 0 0 1-8 0V2.3z"></path><path d="M9 13v2a4 4 0 0 0 4 4h1a4 4 0 0 0 4-4v-3"></path><circle cx="18" cy="9" r="2"></circle></svg>
+        </div>
+        <h3>Clinic Staff / Receptionist</h3>
+        <ul>
+          <li>Create, update, disable, or remove slots</li>
+          <li>View appointment requests and information</li>
+          <li>Confirm or cancel requests</li>
+          <li>Update status, including Completed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">04 / 09</span>
+</section>
+
+<!-- ============ SLIDE 5: HOW IT WORKS ============ -->
+<section class="slide pale" id="how" data-title="How it works">
+  <div class="inner">
+    <span class="eyebrow">Workflow</span>
+    <h2>How ClinicEase Works</h2>
+    <p class="lead">A straightforward three-step workflow designed for patients and healthcare providers.</p>
+    <div class="grid g3">
+      <div class="card"><div class="numbadge">1</div><h3>Choose a slot</h3>
+        <p>The patient logs in and sees only slots marked Available. Staff create these slots; patients cannot invent times.</p></div>
+      <div class="card"><div class="numbadge">2</div><h3>Submit and confirm</h3>
+        <p>The patient fills in contact details and purpose, then answers "Save this appointment?". The system re-checks the slot right before saving.</p></div>
+      <div class="card"><div class="numbadge">3</div><h3>Staff review</h3>
+        <p>The request is saved as Pending. Staff confirm or cancel it, and the patient is notified in the app and by email.</p></div>
+    </div>
+  </div>
+  <span class="slide-num">05 / 09</span>
+</section>
+
+<!-- ============ SLIDE 6: STATUS LIFECYCLE ============ -->
+<section class="slide" id="status" data-title="Status">
+  <div class="inner">
+    <span class="eyebrow">Statuses</span>
+    <h2>Appointment Status Lifecycle</h2>
+    <p class="lead">Clear visual indicators keep all parties informed at every stage.</p>
+    <div class="flow">
+      <div class="status-card"><span class="tag pending">Pending</span><p>Request saved. Waiting for staff review. The slot is Booked.</p></div>
+      <span class="arrow">→</span>
+      <div class="branch">
+        <div class="status-card"><span class="tag confirmed">Confirmed</span><p>Staff approved the request.</p></div>
+        <div class="status-card"><span class="tag cancelled">Cancelled</span><p>Staff cancelled. The slot becomes Available again.</p></div>
+      </div>
+      <span class="arrow">→</span>
+      <div class="status-card"><span class="tag completed">Completed</span><p>The appointment took place. Only a Confirmed appointment can reach this.</p></div>
+    </div>
+    <p class="note">Allowed changes: Pending → Confirmed, Pending → Cancelled, Confirmed → Completed. Any other change is rejected by the system.</p>
+  </div>
+  <span class="slide-num">06 / 09</span>
+</section>
+
+<!-- ============ SLIDE 7: BUSINESS RULES ============ -->
+<section class="slide pale" id="rules" data-title="Rules">
+  <div class="inner">
+    <span class="eyebrow">Business Rules</span>
+    <h2>Fair, first come, first served.</h2>
+    <p class="lead">The backend protects every slot, even when two patients click at almost the same moment.</p>
+    <div class="grid g3">
+      <!-- Shield Check SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        </div>
+        <h3>One appointment per slot</h3>
+        <p>A slot can be assigned to only one appointment.</p>
+      </div>
+      <!-- Check Circle / Available SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h3>Available only</h3>
+        <p>Booked, disabled, or unavailable slots cannot be requested.</p>
+      </div>
+      <!-- Clock / Refresh re-check SVG -->
+      <div class="card">
+        <div class="icon">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+        </div>
+        <h3>Re-check before saving</h3>
+        <p>Only the first valid request is saved. The other sees: "This appointment slot is no longer available. Please select another slot."</p>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">07 / 09</span>
+</section>
+
+<!-- ============ SLIDE 8: OOP ============ -->
+<section class="slide dark" id="oop" data-title="OOP design">
+  <div class="blob a"></div>
+  <div class="inner">
+    <span class="eyebrow">Object-Oriented Design</span>
+    <h2>Built on inheritance and polymorphism.</h2>
+    <div class="grid g2" style="align-items:center">
+      <div>
+        <div class="tree">
+          <div class="node root">User</div>
+          <div class="line"></div>
+          <div class="kids"><div class="node">Patient</div><div class="node">ClinicStaff</div></div>
+          <p class="small-code">get_user_role() → "Patient" | "Clinic Staff"</p>
+        </div>
+        <p class="note" style="color:#C9CFBF">The system calls <code>user.get_user_role()</code> after login. The object decides the answer, so the matching dashboard opens.</p>
+      </div>
+      <div class="card">
+        <h3>Core classes</h3>
+        <ul>
+          <li><b>User</b>: parent with private, hashed password</li>
+          <li><b>AppointmentSlot</b>: date, time, slot status</li>
+          <li><b>Appointment</b>: links one patient to one slot</li>
+          <li>Status changes only through methods that reject invalid moves</li>
+          <li>Patterns: Factory (dashboards, notifications) and Adapter (password hashing, email)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <span class="slide-num">08 / 09</span>
+</section>
+
+<!-- ============ SLIDE 9: TECH + TEAM + CTA + FOOTER ============ -->
+<section class="slide" id="start" data-title="Get started" style="background:var(--color-forest);color:var(--color-cream)">
+  <div class="blob a" style="background:var(--color-sage);opacity:.25"></div>
+  <div class="inner">
+    <span class="eyebrow" style="color:var(--color-sage-pale)">Stack and Team</span>
+    <h2>Ready to book your first appointment?</h2>
+    <div class="grid g3" style="margin-top:28px">
+      <div class="card" style="background:rgba(242,240,225,.07);border-color:rgba(242,240,225,.18)"><h3>Frontend</h3><p style="color:#C9CFBF">HTML, CSS, and JavaScript</p></div>
+      <div class="card" style="background:rgba(242,240,225,.07);border-color:rgba(242,240,225,.18)"><h3>Backend</h3><p style="color:#C9CFBF">Python Flask, sessions, hashed passwords</p></div>
+      <div class="card" style="background:rgba(242,240,225,.07);border-color:rgba(242,240,225,.18)"><h3>Database</h3><p style="color:#C9CFBF">MySQL: users, slots, appointments</p></div>
+    </div>
+    <div class="hero-actions">
+      <a class="btn btn-light" href="/register">Book an Appointment</a>
+      <a class="btn btn-outline-light" href="/login">Sign In to Account</a>
+    </div>
+    <div class="footer">
+      <strong>ClinicEase System © 2026</strong>
+      <span>Web-Based Healthcare Appointment Management</span>
+      <span>Course: Object Oriented Programming</span>
+      <span>Proponents: Bautista, Benitez, Padullon | Instructor: Mr. John Romel Tinasas</span>
+    </div>
+  </div>
+  <span class="slide-num">09 / 09</span>
+</section>
+
+<!-- side dots, filled by script -->
+<nav class="dots" id="dots" aria-label="Slides"></nav>
+
+<script>
+/* =========================================================
+   JS: dots, keyboard arrows, dark-slide detection
+   ========================================================= */
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var dots=document.getElementById('dots');
+  slides.forEach(function(s,i){                       // 1. one dot per slide
+    var a=document.createElement('a');
+    a.href='#'+s.id; a.setAttribute('aria-label',s.dataset.title); a.title=s.dataset.title;
+    dots.appendChild(a);
+  });
+  var links=[].slice.call(dots.children);
+  var current=0;
+  var io=new IntersectionObserver(function(entries){  // 2. which slide is on screen?
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        current=slides.indexOf(e.target);
+        links.forEach(function(l,i){l.classList.toggle('on',i===current)});
+        var dark=e.target.classList.contains('dark')||e.target.id==='start';
+        document.body.classList.toggle('on-dark',dark);
+      }
+    });
+  },{threshold:0.6});
+  slides.forEach(function(s){io.observe(s)});
+  document.addEventListener('keydown',function(e){     // 3. arrows / PageUp / PageDown / space
+    var next=['ArrowDown','PageDown'].indexOf(e.key)>-1;
+    var prev=['ArrowUp','PageUp'].indexOf(e.key)>-1;
+    if(!next&&!prev)return;
+    e.preventDefault();
+    var t=Math.max(0,Math.min(slides.length-1,current+(next?1:-1)));
+    slides[t].scrollIntoView({behavior:'smooth'});
+  });
+})();
+</script>
+</body>
+</html>

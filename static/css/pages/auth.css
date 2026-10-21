@@ -2,10 +2,6 @@
     max-width: 1080px;
 }
 
-.auth-page-login {
-    max-width: 560px;
-}
-
 .auth-page-create {
     max-width: 1080px;
 }
@@ -49,9 +45,18 @@
     background: var(--color-surface);
 }
 
-#sign-in-panel {
+.auth-page-login #sign-in-panel {
     max-width: 480px;
     margin-inline: auto;
+}
+
+.auth-page-login {
+    max-width: 480px;
+}
+
+.auth-switch {
+    margin-top: 20px;
+    text-align: center;
 }
 
 .registration-layout {

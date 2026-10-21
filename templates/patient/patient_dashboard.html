@@ -1,143 +1,331 @@
 {% extends "base.html" %}
-
 {% block title %}Patient Dashboard - ClinicEase{% endblock %}
-
 {% block page_css %}
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/patient-dashboard.css') }}">
 {% endblock %}
-
 {% block content %}
-<div class="container">
+<div class="container patient-dashboard">
     <header class="dashboard-welcome">
         <div>
+            <p class="eyebrow">PATIENT DASHBOARD</p>
             <h1>Welcome, {{ user.name }}</h1>
-            <p>Your appointment requests and available clinic times.</p>
+            <p>Manage your appointments or find a time that works for you.</p>
         </div>
-        <a class="btn btn-primary" href="#available-slots">Book a New Appointment</a>
+        <div class="welcome-summary" aria-label="Appointment summary">
+            <div class="summary-item">
+                <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+                <span class="summary-count">{{ upcoming_appointments|selectattr('status', 'equalto', 'Pending')|list|length }}</span>
+                <span class="summary-label">Pending</span>
+            </div>
+            <div class="summary-item">
+                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                <span class="summary-count">{{ upcoming_appointments|selectattr('status', 'equalto', 'Confirmed')|list|length }}</span>
+                <span class="summary-label">Confirmed</span>
+            </div>
+            <div class="summary-item">
+                <span class="material-symbols-outlined" aria-hidden="true">history</span>
+                <span class="summary-count">{{ past_appointments|length }}</span>
+                <span class="summary-label">Past visits</span>
+            </div>
+        </div>
     </header>
 
-    <section class="card dashboard-section" aria-labelledby="upcoming-title">
-        <div class="card-header">
+    <div class="dashboard-tabs" role="tablist" aria-label="Patient dashboard sections">
+        <button id="appointments-tab" class="dashboard-tab is-active" type="button" role="tab"
+                aria-selected="true" aria-controls="appointments-panel" data-dashboard-tab="appointments-panel">
+            <span class="material-symbols-outlined" aria-hidden="true">event_note</span>
+            My Appointments
+        </button>
+        <button id="booking-tab" class="dashboard-tab" type="button" role="tab"
+                aria-selected="false" aria-controls="booking-panel" data-dashboard-tab="booking-panel" tabindex="-1">
+            <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+            Book Appointment
+        </button>
+    </div>
+
+    <section id="appointments-panel" class="dashboard-tab-panel" role="tabpanel"
+             aria-labelledby="appointments-tab">
+        <div class="panel-heading">
             <div>
-                <h2 id="upcoming-title">Upcoming Appointments</h2>
-                <p>Requests awaiting review and confirmed visits.</p>
+                <h2>My Appointments</h2>
+                <p>Choose an appointment to see its details.</p>
             </div>
+            <button class="btn btn-primary" type="button" data-open-tab="booking-panel">
+                <span class="material-symbols-outlined" aria-hidden="true">add_circle</span>
+                Book an appointment
+            </button>
         </div>
 
-        {% if upcoming_appointments %}
-            <ul class="appointment-list">
-                {% for appt in upcoming_appointments %}
-                    <li class="appointment-item">
-                        <div>
-                            <h3>{{ appt.slot_date }} at {{ appt.time }}</h3>
-                            <p>{{ appt.purpose }}</p>
-                            <p class="appointment-meta">Appointment #{{ appt.appointment_id }}</p>
-                        </div>
-                        {% if appt.status == 'Pending' %}
-                            <span class="badge-pending">Pending</span>
-                        {% else %}
-                            <span class="badge-confirmed">Confirmed</span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="empty-state">You have no upcoming appointments. Choose an available time below to get started.</p>
-        {% endif %}
-    </section>
-
-    <section class="card dashboard-section" aria-labelledby="history-title">
-        <div class="card-header">
-            <div>
-                <h2 id="history-title">Appointment History</h2>
-                <p>Completed and cancelled appointment requests.</p>
+        <section class="appointment-group" aria-labelledby="upcoming-title">
+            <div class="group-heading">
+                <h3 id="upcoming-title">Upcoming</h3>
+                <span class="group-count">{{ upcoming_appointments|length }}</span>
             </div>
-        </div>
-        {% if past_appointments %}
-            <ul class="appointment-list">
-                {% for appt in past_appointments %}
-                    <li class="appointment-item">
-                        <div>
-                            <h3>{{ appt.slot_date }} at {{ appt.time }}</h3>
-                            <p>{{ appt.purpose }}</p>
-                            <p class="appointment-meta">Appointment #{{ appt.appointment_id }}</p>
-                        </div>
-                        {% if appt.status == 'Pending' %}
-                            <span class="badge-pending">Pending</span>
-                        {% elif appt.status == 'Confirmed' %}
-                            <span class="badge-confirmed">Confirmed</span>
-                        {% elif appt.status == 'Completed' %}
-                            <span class="badge-completed">Completed</span>
-                        {% else %}
-                            <span class="badge-cancelled">{{ appt.status }}</span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="empty-state">Your appointment history will appear here.</p>
-        {% endif %}
-    </section>
-
-    <section class="card dashboard-section" id="available-slots" aria-labelledby="slots-title">
-        <div class="card-header">
-            <div>
-                <h2 id="slots-title">Available Appointment Times</h2>
-                <p>Select a time to submit an appointment request.</p>
-            </div>
-        </div>
-        {% if slots %}
-            <ul class="slot-list">
-                {% for slot in slots %}
-                    <li class="item-row">
-                        <div>
-                            <div class="item-info-title">{{ slot.slot_date }} at {{ slot.time }}</div>
-                            <div class="item-info-sub">Available appointment time</div>
-                        </div>
-                        <button class="btn btn-primary btn-sm" type="button"
-                                data-slot-id="{{ slot.slot_id }}"
-                                data-slot-date="{{ slot.slot_date }}"
-                                data-slot-time="{{ slot.time }}">
-                            Choose this time
+            {% if upcoming_appointments %}
+                <div class="appointment-list">
+                    {% for appt in upcoming_appointments %}
+                        <button class="appointment-card" type="button"
+                                data-appointment-details
+                                data-appt-id="{{ appt.appointment_id }}"
+                                data-appt-date="{{ appt.slot_date }}"
+                                data-appt-time="{{ appt.time }}"
+                                data-appt-purpose="{{ appt.purpose }}"
+                                data-appt-status="{{ appt.status }}"
+                                data-appt-contact="{{ appt.contact_number or 'Not provided' }}"
+                                data-appt-created="{{ appt.created_at }}"
+                                aria-label="View {{ appt.status|lower }} appointment on {{ appt.slot_date }} at {{ appt.time }}">
+                            <span class="appointment-card__date-icon material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                            <span class="appointment-card__main">
+                                <span class="appointment-card__date">{{ appt.slot_date }}</span>
+                                <span class="appointment-card__time">{{ appt.time }}</span>
+                                <span class="appointment-card__purpose">{{ appt.purpose }}</span>
+                            </span>
+                            <span class="status-badge status-{{ appt.status|lower }}">
+                                <span class="material-symbols-outlined" aria-hidden="true">
+                                    {% if appt.status == 'Pending' %}schedule
+                                    {% elif appt.status == 'Confirmed' %}check_circle
+                                    {% elif appt.status == 'Completed' %}task_alt
+                                    {% elif appt.status == 'Cancelled' %}cancel
+                                    {% else %}event
+                                    {% endif %}
+                                </span>
+                                {{ appt.status }}
+                            </span>
+                            <span class="material-symbols-outlined appointment-card__open" aria-hidden="true">chevron_right</span>
                         </button>
-                    </li>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <span class="material-symbols-outlined" aria-hidden="true">event_available</span>
+                    <h4>No upcoming appointments</h4>
+                    <p>When you request an appointment, it will appear here.</p>
+                    <button class="btn btn-secondary" type="button" data-open-tab="booking-panel">
+                        Find an appointment time
+                    </button>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="appointment-group past-appointment-group" aria-labelledby="past-title">
+            <div class="group-heading">
+                <h3 id="past-title">Past appointments</h3>
+                <span class="group-count">{{ past_appointments|length }}</span>
+            </div>
+            {% if past_appointments %}
+                <div class="appointment-list">
+                    {% for appt in past_appointments %}
+                        <button class="appointment-card appointment-card--past" type="button"
+                                data-appointment-details
+                                data-appt-id="{{ appt.appointment_id }}"
+                                data-appt-date="{{ appt.slot_date }}"
+                                data-appt-time="{{ appt.time }}"
+                                data-appt-purpose="{{ appt.purpose }}"
+                                data-appt-status="{{ appt.status }}"
+                                data-appt-contact="{{ appt.contact_number or 'Not provided' }}"
+                                data-appt-created="{{ appt.created_at }}"
+                                aria-label="View {{ appt.status|lower }} appointment on {{ appt.slot_date }} at {{ appt.time }}">
+                            <span class="appointment-card__date-icon material-symbols-outlined" aria-hidden="true">history</span>
+                            <span class="appointment-card__main">
+                                <span class="appointment-card__date">{{ appt.slot_date }}</span>
+                                <span class="appointment-card__time">{{ appt.time }}</span>
+                                <span class="appointment-card__purpose">{{ appt.purpose }}</span>
+                            </span>
+                            <span class="status-badge status-{{ appt.status|lower }}">
+                                <span class="material-symbols-outlined" aria-hidden="true">
+                                    {% if appt.status == 'Pending' %}schedule
+                                    {% elif appt.status == 'Confirmed' %}check_circle
+                                    {% elif appt.status == 'Completed' %}task_alt
+                                    {% elif appt.status == 'Cancelled' %}cancel
+                                    {% else %}event
+                                    {% endif %}
+                                </span>
+                                {{ appt.status }}
+                            </span>
+                            <span class="material-symbols-outlined appointment-card__open" aria-hidden="true">chevron_right</span>
+                        </button>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-history">Your past appointments will appear here.</p>
+            {% endif %}
+        </section>
+    </section>
+
+    <section id="booking-panel" class="dashboard-tab-panel" role="tabpanel"
+             aria-labelledby="booking-tab" hidden>
+        <div class="panel-heading">
+            <div>
+                <h2>Book an appointment</h2>
+                <p>Choose an available date and time, then tell us what you need.</p>
+            </div>
+        </div>
+
+        <ol class="booking-stepper" aria-label="Booking progress">
+            <li class="booking-step is-current" data-step-indicator="1" aria-current="step">
+                <span class="booking-step__number">1</span>
+                <span><strong>Choose a date</strong><small>Pick a day</small></span>
+            </li>
+            <li class="booking-step" data-step-indicator="2">
+                <span class="booking-step__number">2</span>
+                <span><strong>Choose a time</strong><small>Select a slot</small></span>
+            </li>
+            <li class="booking-step" data-step-indicator="3">
+                <span class="booking-step__number">3</span>
+                <span><strong>Your details</strong><small>Review and send</small></span>
+            </li>
+        </ol>
+
+        <div id="booking-selection" class="booking-selection-grid" data-step-panel="selection">
+            <section class="booking-card calendar-card" aria-labelledby="calendar-title">
+                <div class="booking-card__heading">
+                    <span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>
+                    <div>
+                        <h3 id="calendar-title">Choose a date</h3>
+                        <p>Available days are highlighted.</p>
+                    </div>
+                </div>
+                <div class="calendar-toolbar">
+                    <button id="calendar-previous" class="calendar-nav-button" type="button"
+                            aria-label="Show previous month" disabled>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+                    </button>
+                    <h4 id="calendar-month" aria-live="polite"></h4>
+                    <button id="calendar-next" class="calendar-nav-button" type="button"
+                            aria-label="Show next month" disabled>
+                        <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                    </button>
+                </div>
+                <div id="availability-calendar" class="availability-calendar"
+                     role="group" aria-label="Available appointment dates"></div>
+                <p id="calendar-feedback" class="inline-feedback" role="alert" hidden></p>
+                <p id="selected-date-label" class="selection-hint" aria-live="polite">
+                    Select a highlighted date to see available times.
+                </p>
+            </section>
+
+            <section class="booking-card time-card" aria-labelledby="time-title">
+                <div class="booking-card__heading">
+                    <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+                    <div>
+                        <h3 id="time-title">Choose a time</h3>
+                        <p id="time-panel-description">Select a date first to see available times.</p>
+                    </div>
+                </div>
+                <div id="available-times-list" class="available-times-list"
+                     aria-label="Available times for selected date" aria-live="polite"></div>
+                <div id="time-empty-state" class="time-empty-state">
+                    <span class="material-symbols-outlined" aria-hidden="true">event</span>
+                    <p>Your available appointment times will appear here.</p>
+                </div>
+                <div class="wizard-actions wizard-actions--selection">
+                    <button id="details-step-button" class="btn btn-primary" type="button" disabled>
+                        Continue to your details
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <section id="booking-details" class="booking-card booking-details" data-step-panel="details" hidden>
+            <div class="booking-card__heading">
+                <span class="material-symbols-outlined" aria-hidden="true">assignment</span>
+                <div>
+                    <h3>Appointment details</h3>
+                    <p>Check your selection and tell us about your visit.</p>
+                </div>
+            </div>
+            <div class="booking-summary" aria-live="polite">
+                <div>
+                    <span class="summary-caption">Date</span>
+                    <strong id="booking-summary-date">Not selected</strong>
+                </div>
+                <div>
+                    <span class="summary-caption">Time</span>
+                    <strong id="booking-summary-time">Not selected</strong>
+                </div>
+            </div>
+            <form id="booking-form" action="{{ url_for('book_appointment_slot') }}" method="post">
+                <input id="selected-slot-id" name="slot_id" type="hidden">
+                <div class="form-group">
+                    <label class="form-label" for="booking-purpose">Purpose of visit</label>
+                    <textarea class="form-textarea" id="booking-purpose" name="purpose"
+                              maxlength="255" rows="4" required
+                              aria-describedby="purpose-help"></textarea>
+                    <p id="purpose-help" class="form-help">Briefly describe the reason for your appointment.</p>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="booking-contact">Contact number <span class="optional-label">(optional)</span></label>
+                    <input class="form-input" id="booking-contact" name="contact_number" type="tel"
+                           autocomplete="tel" inputmode="tel" maxlength="20"
+                           value="{{ user.contact_number or '' }}">
+                    <p class="form-help">We may use this number if the clinic needs to contact you.</p>
+                </div>
+                <div id="booking-feedback" class="inline-feedback" role="alert" hidden></div>
+                <div class="wizard-actions wizard-actions--details">
+                    <button id="back-to-times" class="btn btn-secondary" type="button">
+                        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+                        Back to times
+                    </button>
+                    <button id="submit-booking" class="btn btn-primary" type="submit">
+                        <span class="material-symbols-outlined" aria-hidden="true">send</span>
+                        Submit appointment request
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        {% if slots %}
+            <div id="available-slot-data" class="visually-hidden" aria-hidden="true">
+                {% for slot in slots %}
+                    <span data-slot-option data-slot-id="{{ slot.slot_id }}"
+                          data-slot-date="{{ slot.slot_date }}"
+                          data-slot-time="{{ slot.time }}"></span>
                 {% endfor %}
-            </ul>
-        {% else %}
-            <p class="empty-state">There are no available appointment times right now. Please check again later.</p>
+            </div>
         {% endif %}
+        <div id="no-slots-message" class="empty-state booking-empty-state" {% if slots %}hidden{% endif %}>
+            <span class="material-symbols-outlined" aria-hidden="true">event_busy</span>
+            <h3>No available times right now</h3>
+            <p>Please check back later or contact the clinic for assistance.</p>
+        </div>
     </section>
 </div>
 
-<div id="booking-modal" class="modal-backdrop hidden" aria-hidden="true">
-    <section class="modal-dialog" role="dialog" aria-modal="true"
-             aria-labelledby="booking-modal-title" aria-describedby="modal-slot-info">
-        <button class="modal-close-btn" type="button" aria-label="Close booking form"
-                data-close-booking>&times;</button>
+<div id="appointment-modal" class="modal-backdrop hidden" aria-hidden="true" hidden>
+    <section class="modal-dialog appointment-details-modal" role="dialog" aria-modal="true"
+             aria-labelledby="appointment-modal-title" tabindex="-1">
+        <button class="modal-close-btn" type="button" aria-label="Close appointment details"
+                data-close-appointment-modal>
+            <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
         <header class="modal-header">
-            <h2 id="booking-modal-title">Request an Appointment</h2>
-            <p id="modal-slot-info"></p>
+            <h2 id="appointment-modal-title">Appointment details</h2>
+            <span id="modal-status-badge" class="status-badge"></span>
         </header>
-        <form id="booking-form" class="modal-body" action="{{ url_for('book_appointment_slot') }}">
-            <input type="hidden" id="modal-slot-id" name="slot_id">
-            <div class="form-group">
-                <label class="form-label" for="modal-contact-number">Contact number (optional)</label>
-                <input class="form-input" id="modal-contact-number" name="contact_number" type="tel"
-                       autocomplete="tel" inputmode="tel" maxlength="20"
-                       data-default-value="{{ user.contact_number }}" value="{{ user.contact_number }}">
+        <div class="modal-body">
+            <dl class="appointment-details-list">
+                <div><dt>Date</dt><dd id="modal-date"></dd></div>
+                <div><dt>Time</dt><dd id="modal-time"></dd></div>
+                <div><dt>Purpose</dt><dd id="modal-purpose"></dd></div>
+                <div><dt>Status</dt><dd id="modal-status"></dd></div>
+                <div><dt>Contact number</dt><dd id="modal-contact"></dd></div>
+                <div><dt>Appointment ID</dt><dd id="modal-id"></dd></div>
+                <div><dt>Request submitted</dt><dd id="modal-created"></dd></div>
+            </dl>
+            <div id="modal-feedback" class="inline-feedback" role="alert" hidden></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" type="button" data-close-appointment-modal>Close</button>
+                <button id="cancel-appointment-button" class="btn btn-danger" type="button" hidden>
+                    <span class="material-symbols-outlined" aria-hidden="true">cancel</span>
+                    Cancel appointment
+                </button>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="modal-purpose">Purpose of visit</label>
-                <textarea class="form-textarea" id="modal-purpose" name="purpose" rows="4"
-                          maxlength="255" required></textarea>
-            </div>
-            <div id="booking-feedback" class="alert alert-error" role="alert" hidden></div>
-            <button class="btn btn-primary btn-block" type="submit">Submit Appointment Request</button>
-        </form>
+        </div>
     </section>
 </div>
 {% endblock %}
-
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/patient-dashboard.js') }}"></script>
 {% endblock %}

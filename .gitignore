@@ -5,6 +5,8 @@ __pycache__/
 *.so
 .Python
 .venv/
+.env
+env
 env/
 venv/
 *.pyc
@@ -12,3 +14,5 @@ venv/
 .DS_Store
 Thumbs.db
 "@ | Out-File -Encoding utf8 .gitignore
+diregard.ps1
+# ignore/

@@ -1,164 +1,42 @@
 {% extends "base.html" %}
 
-{% block title %}Sign In or Create Account - ClinicEase{% endblock %}
+{% block title %}Sign In - ClinicEase{% endblock %}
 
 {% block page_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="container auth-page {% if active_tab|default('') == 'create' %}auth-page-create{% else %}auth-page-login{% endif %}">
+<div class="container auth-page auth-page-login">
     <section class="card auth-card" aria-labelledby="auth-title">
         <header class="auth-heading">
-            <h1 id="auth-title">Welcome to ClinicEase</h1>
-            <p>Sign in to manage appointments, or create an account and request your first visit.</p>
+            <h1 id="auth-title">Welcome back to ClinicEase</h1>
+            <p>Sign in to manage your appointments.</p>
         </header>
 
-        <div class="auth-tabs" role="tablist" aria-label="Account options">
-            <button class="auth-tab" id="sign-in-tab" type="button" role="tab"
-                    aria-selected="{{ 'false' if active_tab|default('') == 'create' else 'true' }}"
-                    aria-controls="sign-in-panel" tabindex="{{ '-1' if active_tab|default('') == 'create' else '0' }}">
-                Sign In
-            </button>
-            <button class="auth-tab" id="create-account-tab" type="button" role="tab"
-                    aria-selected="{{ 'true' if active_tab|default('') == 'create' else 'false' }}"
-                    aria-controls="create-account-panel" tabindex="{{ '0' if active_tab|default('') == 'create' else '-1' }}">
-                Create Account
-            </button>
-        </div>
+        {% if error %}
+            <div class="alert alert-error" role="alert">{{ error }}</div>
+        {% endif %}
+        {% if message %}
+            <div class="alert alert-success" role="status">{{ message }}</div>
+        {% endif %}
+        <div id="sign-in-feedback" class="alert alert-error" role="alert" hidden></div>
 
-        <section id="sign-in-panel" role="tabpanel" aria-labelledby="sign-in-tab"
-                 {% if active_tab|default('') == 'create' %}hidden{% endif %}>
-            {% if error and active_tab|default('') != 'create' %}
-                <div class="alert alert-error" role="alert">{{ error }}</div>
-            {% endif %}
-            {% if message %}
-                <div class="alert alert-success" role="status">{{ message }}</div>
-            {% endif %}
-            <div id="sign-in-feedback" class="alert alert-error" role="alert" hidden></div>
-
-            <form id="sign-in-form" action="{{ url_for('login_page') }}" data-api-url="{{ url_for('api_login') }}"
-                  data-dashboard-url="{{ url_for('dashboard') }}" method="post">
-                <div class="form-group">
-                    <label class="form-label" for="sign-in-email">Email address</label>
-                    <input class="form-input" id="sign-in-email" name="email" type="email"
-                           autocomplete="email" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="sign-in-password">Password</label>
-                    <input class="form-input" id="sign-in-password" name="password" type="password"
-                           autocomplete="current-password" required>
-                </div>
-                <button class="btn btn-primary btn-block" type="submit">Sign In</button>
-            </form>
-        </section>
-
-        <section id="create-account-panel" role="tabpanel" aria-labelledby="create-account-tab"
-                 {% if active_tab|default('') != 'create' %}hidden{% endif %}>
-            {% if error and active_tab|default('') == 'create' %}
-                <div class="alert alert-error" role="alert">{{ error }}</div>
-            {% endif %}
-            <div id="create-account-feedback" class="alert alert-error" role="alert" hidden></div>
-
-            <form id="create-account-form" action="{{ url_for('register_page') }}"
-                  data-api-url="{{ url_for('api_register_and_book') }}"
-                  data-dashboard-url="{{ url_for('patient_dashboard_view') }}"
-                  data-confirm-message="Save this appointment?" method="post">
-                <div class="registration-layout">
-                    <div class="registration-fields">
-                        <div class="form-group">
-                            <label class="form-label" for="create-name">Full name</label>
-                            <input class="form-input" id="create-name" name="name" type="text"
-                                   autocomplete="name" maxlength="100"
-                                   value="{{ form_data.get('name', '') }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="create-email">Email address</label>
-                            <input class="form-input" id="create-email" name="email" type="email"
-                                   autocomplete="email" maxlength="100"
-                                   value="{{ form_data.get('email', '') }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="create-contact-number">Contact number (optional)</label>
-                            <input class="form-input" id="create-contact-number" name="contact_number" type="tel"
-                                   autocomplete="tel" inputmode="tel" maxlength="20"
-                                   value="{{ form_data.get('contact_number', '') }}">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="create-password">Password</label>
-                            <input class="form-input" id="create-password" name="password" type="password"
-                                   autocomplete="new-password" maxlength="1024" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="initial-purpose">Purpose of visit</label>
-                            <textarea class="form-textarea" id="initial-purpose" name="purpose"
-                                      maxlength="255" rows="3" required>{{ form_data.get('purpose', '') }}</textarea>
-                        </div>
-                    </div>
-
-                    <section class="availability-panel" aria-labelledby="availability-title">
-                        <div class="availability-heading">
-                            <div>
-                                <h2 id="availability-title">Choose an appointment</h2>
-                                <p>Select a date, then choose an available time.</p>
-                            </div>
-                            <div class="calendar-navigation" aria-label="Calendar navigation">
-                                <button class="calendar-nav-button" id="calendar-previous" type="button"
-                                        aria-label="Show previous month">&larr;</button>
-                                <p class="calendar-month" id="calendar-month" aria-live="polite"></p>
-                                <button class="calendar-nav-button" id="calendar-next" type="button"
-                                        aria-label="Show next month">&rarr;</button>
-                            </div>
-                        </div>
-                        {% if slots_error %}
-                            <p class="form-help availability-message" role="status">{{ slots_error }}</p>
-                        {% elif not initial_request_slots %}
-                            <p class="form-help availability-message" role="status">
-                                No appointment times are available yet. Please ask clinic staff to generate upcoming slots.
-                            </p>
-                        {% endif %}
-                        <div id="availability-calendar" class="availability-calendar" tabindex="-1"
-                             role="group" aria-label="Available appointment dates"></div>
-                        <div class="available-times">
-                            <h3 id="available-times-title">Available times</h3>
-                            <p id="calendar-instructions" class="form-help">
-                                Choose a date on the calendar to see available times.
-                            </p>
-                            <div id="available-times-list" class="available-times-list"
-                                 aria-labelledby="available-times-title"></div>
-                        </div>
-                        <input type="hidden" id="initial-slot-id"
-                               value="{{ form_data.get('slot_id', '') }}">
-                        <noscript>
-                            <div class="form-group">
-                                <label class="form-label" for="fallback-slot-id">Preferred appointment time</label>
-                                <select class="form-input" id="fallback-slot-id" name="slot_id" required>
-                                    <option value="">Choose an available date and time</option>
-                                    {% for slot in initial_request_slots %}
-                                        <option value="{{ slot.slot_id }}"
-                                                {% if form_data.get('slot_id')|string == slot.slot_id|string %}selected{% endif %}>
-                                            {{ slot.slot_date }} at {{ slot.time }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </noscript>
-                        <div id="calendar-feedback" class="alert alert-error calendar-feedback"
-                             role="alert" aria-live="assertive" hidden></div>
-                        <div id="available-slot-data" class="visually-hidden" aria-hidden="true">
-                            {% for slot in initial_request_slots %}
-                                <span data-slot-option data-slot-id="{{ slot.slot_id }}"
-                                      data-slot-date="{{ slot.slot_date }}"
-                                      data-slot-time="{{ slot.time }}"></span>
-                            {% endfor %}
-                        </div>
-                    </section>
-                </div>
-                <button class="btn btn-primary btn-block" type="submit">
-                    Create Account and Request Appointment
-                </button>
-            </form>
-        </section>
+        <form id="sign-in-form" action="{{ url_for('login_page') }}" data-api-url="{{ url_for('api_login') }}"
+              data-dashboard-url="{{ url_for('dashboard') }}" method="post">
+            <div class="form-group">
+                <label class="form-label" for="sign-in-email">Email address</label>
+                <input class="form-input" id="sign-in-email" name="email" type="email"
+                       autocomplete="email" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="sign-in-password">Password</label>
+                <input class="form-input" id="sign-in-password" name="password" type="password"
+                       autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Sign In</button>
+        </form>
+        <p class="auth-switch">New to ClinicEase? <a href="{{ url_for('register_page') }}">Create an account</a></p>
     </section>
 </div>
 {% endblock %}

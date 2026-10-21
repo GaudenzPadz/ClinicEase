@@ -61,7 +61,9 @@ CREATE TABLE IF NOT EXISTS blocked_dates (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Default clinic hours: Monday through Friday, 08:00–17:00, 30-minute slots.
+-- Default clinic hours: weekdays 08:00–17:00 and weekends 08:00–12:00,
+-- with 30-minute slots. The generator creates the final slot only when its
+-- full duration ends by the configured closing time.
 INSERT IGNORE INTO clinic_schedule
     (weekday, open_time, close_time, slot_duration_minutes, is_active)
 VALUES
@@ -69,7 +71,9 @@ VALUES
     (1, '08:00:00', '17:00:00', 30, TRUE),
     (2, '08:00:00', '17:00:00', 30, TRUE),
     (3, '08:00:00', '17:00:00', 30, TRUE),
-    (4, '08:00:00', '17:00:00', 30, TRUE);
+    (4, '08:00:00', '17:00:00', 30, TRUE),
+    (5, '08:00:00', '12:00:00', 30, TRUE),
+    (6, '08:00:00', '12:00:00', 30, TRUE);
 
 INSERT IGNORE INTO blocked_dates (blocked_date, reason)
 VALUES ('2026-12-25', 'Christmas Day');

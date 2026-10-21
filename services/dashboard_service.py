@@ -38,6 +38,8 @@ class StaffDashboard(BaseDashboard):
                        WHERE appointments.slot_id = slots.slot_id
                    ) AS has_appointments
             FROM appointment_slots AS slots
+            WHERE slots.slot_date BETWEEN CURRENT_DATE
+                AND DATE_ADD(CURRENT_DATE, INTERVAL 14 DAY)
             ORDER BY slots.slot_date ASC, slots.time ASC
             """
         )
