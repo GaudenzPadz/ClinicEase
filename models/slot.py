@@ -41,6 +41,31 @@ class AppointmentSlot:
         self.status = "Booked"
         return True
 
+    def book_atomically(self, cursor) -> bool:
+        """Claim the slot only if it is still Available in the database."""
+        if not self.is_available():
+            raise ValueError(
+                "This appointment slot is no longer available. Please select another slot."
+            )
+
+        cursor.execute(
+            """
+            UPDATE appointment_slots
+            SET status = 'Booked'
+            WHERE slot_id = %s
+              AND status = 'Available'
+              AND slot_date >= CURRENT_DATE
+            """,
+            (self.slot_id,),
+        )
+        if cursor.rowcount != 1:
+            raise ValueError(
+                "This appointment slot is no longer available. Please select another slot."
+            )
+
+        self.status = "Booked"
+        return True
+
     def release(self) -> bool:
         self.status = "Available"
         return True
@@ -65,19 +90,28 @@ class AppointmentSlot:
 
         cursor = conn.cursor(dictionary=True)
         try:
-            cursor.execute(
-                "SELECT * FROM appointment_slots WHERE slot_id = %s", (slot_id,)
-            )
-            slot_data = cursor.fetchone()
-            if not slot_data:
-                return None
-
-            return AppointmentSlot(
-                slot_id=slot_data["slot_id"],
-                slot_date=slot_data["slot_date"],
-                time=slot_data["time"],
-                status=slot_data["status"],
-            )
+            return AppointmentSlot.fetch_with_cursor(cursor, slot_id)
         finally:
             cursor.close()
             conn.close()
+
+    @staticmethod
+    def fetch_with_cursor(cursor, slot_id: int):
+        cursor.execute(
+            """
+            SELECT slot_id, slot_date, time, status
+            FROM appointment_slots
+            WHERE slot_id = %s
+            """,
+            (slot_id,),
+        )
+        slot_data = cursor.fetchone()
+        if not slot_data:
+            return None
+
+        return AppointmentSlot(
+            slot_id=slot_data["slot_id"],
+            slot_date=slot_data["slot_date"],
+            time=slot_data["time"],
+            status=slot_data["status"],
+        )

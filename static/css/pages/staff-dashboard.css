@@ -1,0 +1,92 @@
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding-block: 8px 24px;
+}
+
+.dashboard-welcome p {
+    margin-top: 6px;
+}
+
+.staff-section {
+    margin-bottom: 24px;
+}
+
+.table-secondary {
+    color: var(--color-text-body);
+    font-size: var(--text-caption);
+}
+
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.btn-approve {
+    border-color: var(--status-completed-text);
+    background: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+
+.btn-approve:hover {
+    background: #D2EADB;
+}
+
+.btn-reject {
+    border-color: var(--status-cancelled-text);
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.btn-reject:hover {
+    background: #F7D9D6;
+}
+
+.slot-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+    gap: 16px;
+}
+
+.slot-form .form-group {
+    margin: 0;
+}
+
+.slot-table {
+    margin-top: 24px;
+}
+
+.report-card {
+    margin-bottom: 24px;
+}
+
+.report-content {
+    padding: 16px;
+    overflow-x: auto;
+    border-radius: var(--radius-btn);
+    background: var(--color-bg);
+    color: var(--color-text-heading);
+    font: 16px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace;
+    white-space: pre-wrap;
+}
+
+@media (max-width: 800px) {
+    .dashboard-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .table-actions {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .slot-form {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+}

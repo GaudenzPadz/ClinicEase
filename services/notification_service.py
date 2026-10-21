@@ -1,4 +1,8 @@
 from abc import ABC, abstractmethod
+from email.message import EmailMessage
+import os
+import smtplib
+import ssl
 
 
 # Abstraction: Base notification service contract
@@ -20,9 +24,29 @@ class ConsoleNotificationService(BaseNotificationService):
 
 class EmailNotificationService(BaseNotificationService):
     def send_notification(self, recipient: str, subject: str, body: str) -> bool:
-        print(f"[EMAIL NOTIFICATION -> {recipient}]")
-        print(f"Subject: {subject}")
-        print(f"Message: {body}")
+        host = os.getenv("CLINICEASE_SMTP_HOST")
+        sender = os.getenv("CLINICEASE_SMTP_SENDER")
+        if not host or not sender:
+            raise RuntimeError(
+                "SMTP email requires CLINICEASE_SMTP_HOST and CLINICEASE_SMTP_SENDER."
+            )
+
+        message = EmailMessage()
+        message["From"] = sender
+        message["To"] = recipient
+        message["Subject"] = subject
+        message.set_content(body)
+
+        port = int(os.getenv("CLINICEASE_SMTP_PORT", "587"))
+        username = os.getenv("CLINICEASE_SMTP_USERNAME")
+        password = os.getenv("CLINICEASE_SMTP_PASSWORD")
+        with smtplib.SMTP(host, port, timeout=20) as server:
+            server.starttls(context=ssl.create_default_context())
+            if username:
+                server.login(username, password or "")
+            refused_recipients = server.send_message(message)
+            if refused_recipients:
+                raise smtplib.SMTPRecipientsRefused(refused_recipients)
         return True
 
 

@@ -1,143 +1,85 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClinicEase API Testing Panel</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-</head>
-<body style="padding: 20px 0;">
+{% extends "base.html" %}
 
-    <div class="container" style="max-width: 800px;">
-        <div style="margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
-            <div>
-                <h2>ClinicEase API Testing Panel</h2>
-                <p style="font-size: 12px;">Status: <strong style="color: var(--color-sage);">Server Online</strong></p>
-            </div>
-            <a href="/" class="btn btn-outline btn-sm">Back to Home</a>
+{% block title %}API Test Panel - ClinicEase{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/api-test.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container test-panel">
+    <header class="test-heading">
+        <div>
+            <h1>ClinicEase API Test Panel</h1>
+            <p>Developer utility for checking the signed-in session and appointment endpoints.</p>
         </div>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Back to home</a>
+    </header>
 
-        <!-- 1. Login Section -->
-        <div class="card" style="margin-bottom: 20px;">
-            <h3>1. Test POST /api/login</h3>
-            <div class="form-group" style="margin-top: 12px;">
-                <label class="form-label">Email</label>
-                <input type="email" id="loginEmail" class="form-input" value="gaudenz@example.com">
+    <section class="card test-section" aria-labelledby="test-login-title">
+        <h2 id="test-login-title">Sign in test</h2>
+        <form id="test-login-form" data-endpoint="{{ url_for('api_login') }}">
+            <div class="form-group">
+                <label class="form-label" for="test-email">Email address</label>
+                <input class="form-input" id="test-email" name="email" type="email" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" id="loginPassword" class="form-input" value="password123">
+                <label class="form-label" for="test-password">Password</label>
+                <input class="form-input" id="test-password" name="password" type="password" required>
             </div>
-            <button onclick="testLogin()" class="btn btn-primary btn-block">Login</button>
-            <pre id="loginResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
-        </div>
+            <button class="btn btn-primary" type="submit">Test Sign In</button>
+        </form>
+        <pre id="login-response" class="test-response" aria-live="polite">Response will appear here.</pre>
+        <p>Active role: <strong id="active-role">Not signed in</strong></p>
+    </section>
 
-        <!-- 2. Dashboard Slots Section -->
-        <div class="card" style="margin-bottom: 20px;">
-            <h3>2. Test GET /api/dashboard/slots</h3>
-            <button onclick="testDashboardSlots()" class="btn btn-primary btn-block" style="margin-top: 12px;">Fetch Available Slots (Factory Pattern)</button>
-            <pre id="slotsResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
+    <section class="card test-section" aria-labelledby="test-slots-title">
+        <h2 id="test-slots-title">Available time test</h2>
+        <button class="btn btn-secondary" id="load-slots"
+                data-endpoint="{{ url_for('get_dashboard_slots') }}" type="button">
+            Load appointment times
+        </button>
+        <pre id="slots-response" class="test-response" aria-live="polite">Response will appear here.</pre>
+        <div class="table-responsive">
+            <table class="data-table">
+                <caption class="visually-hidden">Appointment slot data returned by the API</caption>
+                <thead>
+                    <tr>
+                        <th scope="col">Slot</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="slots-table-body">
+                    <tr><td colspan="4">Load appointment times to view results.</td></tr>
+                </tbody>
+            </table>
         </div>
+    </section>
 
-        <!-- 3. Slot Booking Section -->
-        <div class="card" style="margin-bottom: 20px;">
-            <h3>3. Test POST /api/slots/book</h3>
-            <div class="form-group" style="margin-top: 12px;">
-                <label class="form-label">Slot ID</label>
-                <input type="number" id="slotId" class="form-input" placeholder="e.g. 1, 2, 4">
+    <section class="card test-section" aria-labelledby="test-booking-title">
+        <h2 id="test-booking-title">Appointment request test</h2>
+        <form id="test-booking-form" data-endpoint="{{ url_for('book_appointment_slot') }}">
+            <div class="form-group">
+                <label class="form-label" for="test-slot-id">Available slot ID</label>
+                <input class="form-input" id="test-slot-id" name="slot_id" type="number" min="1" required>
             </div>
             <div class="form-group">
-                <label class="form-label">Purpose</label>
-                <input type="text" id="purpose" class="form-input" value="General Checkup">
+                <label class="form-label" for="test-contact-number">Contact number (optional)</label>
+                <input class="form-input" id="test-contact-number" name="contact_number" type="tel">
             </div>
-            <button onclick="testBookSlot()" class="btn btn-primary btn-block">Book Slot</button>
-            <pre id="bookResponse" style="margin-top: 12px; background-color: var(--color-cream); padding: 12px; border-radius: 8px; font-size: 11px; white-space: pre-wrap;">Response will appear here...</pre>
-        </div>
-
-        <!-- 4. Live Data Summary Table -->
-        <div class="card">
-            <h3>4. Live Session & Slots Overview</h3>
-            <p style="font-size: 12px; margin: 8px 0 14px 0;"><strong>Active Role:</strong> <span id="uiRole">Not Logged In</span></p>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Slot ID</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="slotsTableBody">
-                        <tr>
-                            <td colspan="4" style="text-align: center; color: var(--color-forest-muted);">No data loaded yet. Click "Fetch Available Slots" above.</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="form-group">
+                <label class="form-label" for="test-purpose">Purpose of visit</label>
+                <input class="form-input" id="test-purpose" name="purpose" type="text" maxlength="255" required>
             </div>
-        </div>
-    </div>
+            <button class="btn btn-primary" type="submit">Submit Test Request</button>
+        </form>
+        <pre id="booking-response" class="test-response" aria-live="polite">Response will appear here.</pre>
+    </section>
+</div>
+{% endblock %}
 
-    <script>
-        async function testLogin() {
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-
-            const res = await fetch("/api/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-            const data = await res.json();
-            document.getElementById("loginResponse").innerText = JSON.stringify(data, null, 2);
-            
-            if (data.role) {
-                document.getElementById("uiRole").innerText = data.role;
-            }
-        }
-
-        async function testDashboardSlots() {
-            const res = await fetch("/api/dashboard/slots");
-            const data = await res.json();
-            document.getElementById("slotsResponse").innerText = JSON.stringify(data, null, 2);
-
-            const tbody = document.getElementById("slotsTableBody");
-            tbody.innerHTML = "";
-
-            if (data.status === "success" && data.slots.length > 0) {
-                data.slots.forEach(slot => {
-                    const tr = document.createElement("tr");
-                    const badgeClass = slot.status === "Available" ? "status-available" : "status-booked";
-                    
-                    tr.innerHTML = `
-                        <td>${slot.slot_id}</td>
-                        <td>${slot.slot_date}</td>
-                        <td>${slot.time}</td>
-                        <td><span class="status-badge ${badgeClass}">${slot.status}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">No slots found or unauthorized.</td></tr>`;
-            }
-        }
-
-        async function testBookSlot() {
-            const slot_id = document.getElementById("slotId").value;
-            const purpose = document.getElementById("purpose").value;
-
-            const res = await fetch("/api/slots/book", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ slot_id: parseInt(slot_id), purpose })
-            });
-            const data = await res.json();
-            document.getElementById("bookResponse").innerText = JSON.stringify(data, null, 2);
-
-            if (data.status === "success") {
-                testDashboardSlots();
-            }
-        }
-    </script>
-</body>
-</html>
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/api-test.js') }}"></script>
+{% endblock %}

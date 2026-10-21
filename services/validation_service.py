@@ -34,6 +34,8 @@ class EmailValidator(BaseValidator):
             return False, "Email address is required."
 
         email = value.strip()
+        if len(email) > 100:
+            return False, "Email address must be 100 characters or fewer."
         if not self.EMAIL_REGEX.match(email):
             return False, "Invalid email format. Please provide a valid email."
 
@@ -54,6 +56,8 @@ class PasswordValidator(BaseValidator):
 
         if len(value) < self.min_length:
             return False, f"Password must be at least {self.min_length} characters long."
+        if len(value) > 1024:
+            return False, "Password must be 1024 characters or fewer."
 
         return True, None
 
@@ -70,7 +74,30 @@ class NameValidator(BaseValidator):
         name = value.strip()
         if len(name) < 2:
             return False, "Name must be at least 2 characters long."
+        if len(name) > 100:
+            return False, "Name must be 100 characters or fewer."
 
+        return True, None
+
+
+class ContactNumberValidator(BaseValidator):
+    def validate(self, value: Any) -> Tuple[bool, Optional[str]]:
+        if value is None or value == "":
+            return True, None
+        if not isinstance(value, str):
+            return False, "Contact number must be text."
+
+        if not value.strip():
+            return True, None
+
+        number = value.strip()
+        digits = re.sub(r"\D", "", number)
+        if len(digits) < 7 or len(digits) > 15:
+            return False, "Enter a contact number with 7 to 15 digits."
+        if len(number) > 20:
+            return False, "Contact number must be 20 characters or fewer."
+        if not re.fullmatch(r"\+?[0-9][0-9().\-\s]*", number):
+            return False, "Contact number contains unsupported characters."
         return True, None
 
 
@@ -82,6 +109,7 @@ class RegistrationValidator(BaseValidator):
     def __init__(self):
         self.name_validator = NameValidator()
         self.email_validator = EmailValidator()
+        self.contact_number_validator = ContactNumberValidator()
         self.password_validator = PasswordValidator()
 
     def validate(self, data: Any) -> Tuple[bool, Optional[str]]:
@@ -90,6 +118,7 @@ class RegistrationValidator(BaseValidator):
 
         name = data.get("name")
         email = data.get("email")
+        contact_number = data.get("contact_number")
         password = data.get("password")
 
         is_valid_name, err_name = self.name_validator.validate(name)
@@ -99,6 +128,13 @@ class RegistrationValidator(BaseValidator):
         is_valid_email, err_email = self.email_validator.validate(email)
         if not is_valid_email:
             return False, err_email
+
+        if contact_number is not None:
+            is_valid_contact_number, err_contact_number = self.contact_number_validator.validate(
+                contact_number
+            )
+            if not is_valid_contact_number:
+                return False, err_contact_number
 
         is_valid_pass, err_pass = self.password_validator.validate(password)
         if not is_valid_pass:
@@ -147,8 +183,18 @@ class BookingValidator(BaseValidator):
             return False, "Slot ID must be a valid integer."
 
         purpose = data.get("purpose")
-        if purpose is not None and isinstance(purpose, str) and len(purpose.strip()) > 255:
+        if not isinstance(purpose, str) or not purpose.strip():
+            return False, "Purpose of visit is required."
+        if len(purpose.strip()) > 255:
             return False, "Purpose exceeds maximum allowed length of 255 characters."
+
+        contact_number = data.get("contact_number")
+        if contact_number is not None:
+            is_valid_contact_number, err_contact_number = ContactNumberValidator().validate(
+                contact_number
+            )
+            if not is_valid_contact_number:
+                return False, err_contact_number
 
         return True, None
 
@@ -180,6 +226,28 @@ class ValidationService:
     @classmethod
     def validate_registration(cls, data: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
         return cls._registration_validator.validate(data)
+
+    @classmethod
+    def validate_initial_request(
+        cls, data: Dict[str, Any]
+    ) -> Tuple[bool, Optional[str]]:
+        if not isinstance(data, dict):
+            return False, "Incomplete Information."
+
+        required_fields = ("name", "email", "password", "slot_id", "purpose")
+        if any(
+            data.get(field) is None
+            or not isinstance(data.get(field), (str, int))
+            or not str(data.get(field)).strip()
+            for field in required_fields
+        ):
+            return False, "Incomplete Information."
+
+        is_valid, error = cls.validate_registration(data)
+        if not is_valid:
+            return False, error
+
+        return cls.validate_booking(data)
 
     @classmethod
     def validate_login(cls, data: Dict[str, Any]) -> Tuple[bool, Optional[str]]:

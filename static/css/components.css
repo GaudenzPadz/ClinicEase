@@ -1,0 +1,315 @@
+.btn {
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    font-size: var(--text-body);
+    font-weight: 650;
+    line-height: 1.3;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+.btn:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}
+
+.btn-primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-surface);
+}
+
+.btn-primary:hover {
+    border-color: var(--color-primary-hover);
+    background: var(--color-primary-hover);
+    color: var(--color-surface);
+}
+
+.btn-secondary {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-heading);
+}
+
+.btn-secondary:hover {
+    border-color: var(--color-primary);
+    background: var(--color-pale-sage);
+    color: var(--color-text-heading);
+}
+
+.btn-danger {
+    border-color: var(--status-cancelled-text);
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.btn-danger:hover {
+    background: #F7D9D6;
+    color: var(--status-cancelled-text);
+}
+
+.btn-sm {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: var(--text-caption);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.card {
+    padding: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.card-header p {
+    margin-top: 6px;
+}
+
+.alert {
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    font-size: var(--text-body);
+}
+
+.alert-error {
+    border-color: var(--status-cancelled-text);
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.alert-success {
+    border-color: var(--status-completed-text);
+    background: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+
+.status-badge,
+.badge-pending,
+.badge-confirmed,
+.badge-completed,
+.badge-cancelled {
+    min-height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: var(--text-caption);
+    font-weight: 650;
+    line-height: 1.35;
+    white-space: nowrap;
+}
+
+.status-pending,
+.badge-pending {
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text);
+}
+
+.status-confirmed,
+.badge-confirmed {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text);
+}
+
+.status-completed,
+.badge-completed {
+    background: var(--status-completed-bg);
+    color: var(--status-completed-text);
+}
+
+.status-cancelled,
+.badge-cancelled {
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-text-heading);
+    font-size: var(--text-body);
+    font-weight: 650;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-input);
+    background: var(--color-surface);
+    color: var(--color-text-heading);
+    font-size: var(--text-body);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-help {
+    margin-top: 6px;
+    color: var(--color-text-body);
+    font-size: var(--text-caption);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-color: var(--color-primary);
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.data-table th {
+    padding: 12px 14px;
+    border-bottom: 2px solid var(--color-border);
+    color: var(--color-text-heading);
+    font-size: var(--text-body);
+    font-weight: 700;
+}
+
+.data-table td {
+    padding: 14px;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+}
+
+.data-table tbody tr:hover {
+    background: #F7F8F4;
+}
+
+.modal-backdrop {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(52, 68, 58, 0.48);
+}
+
+.modal-dialog {
+    position: relative;
+    width: min(100%, 500px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-soft);
+}
+
+.modal-header {
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header p {
+    margin-top: 6px;
+}
+
+.modal-body {
+    padding: 20px 24px 24px;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-btn);
+    background: transparent;
+    color: var(--color-text-heading);
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.modal-close-btn:hover {
+    background: var(--color-pale-sage);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.toast {
+    position: fixed;
+    z-index: 1100;
+    right: 16px;
+    bottom: 16px;
+    width: min(460px, calc(100% - 32px));
+    padding: 14px 16px;
+    border: 1px solid var(--status-completed-text);
+    border-radius: var(--radius-btn);
+    background: var(--status-completed-bg);
+    color: var(--status-completed-text);
+    box-shadow: var(--shadow-soft);
+    font-weight: 600;
+}
+
+.toast-error {
+    border-color: var(--status-cancelled-text);
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text);
+}

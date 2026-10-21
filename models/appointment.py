@@ -4,6 +4,12 @@ from database import get_connection
 # Encapsulation: Status management with property and validation setter
 class Appointment:
     VALID_STATUSES = ["Pending", "Confirmed", "Cancelled", "Completed"]
+    ALLOWED_TRANSITIONS = {
+        "Pending": {"Confirmed", "Cancelled"},
+        "Confirmed": {"Completed"},
+        "Cancelled": set(),
+        "Completed": set(),
+    }
 
     def __init__(
         self,
@@ -31,13 +37,14 @@ class Appointment:
                 f"Invalid status: '{new_status}'. Allowed values: {self.VALID_STATUSES}"
             )
 
-        if self.__status is not None:
-            if self.__status == "Completed":
-                raise ValueError("Cannot modify an appointment that is already Completed.")
-            if self.__status == "Cancelled":
-                raise ValueError("Cannot modify an appointment that is already Cancelled.")
-            if self.__status == "Pending" and new_status == "Completed":
-                raise ValueError("Pending appointments must be Confirmed before being marked Completed.")
+        if (
+            self.__status is not None
+            and new_status != self.__status
+            and new_status not in self.ALLOWED_TRANSITIONS[self.__status]
+        ):
+            raise ValueError(
+                f"Appointment cannot transition from {self.__status} to {new_status}."
+            )
 
         self.__status = new_status
 
@@ -47,14 +54,38 @@ class Appointment:
         self.status = "Confirmed"
 
     def cancel(self):
-        if self.__status == "Completed":
-            raise ValueError("Cannot cancel a completed appointment.")
+        if self.__status != "Pending":
+            raise ValueError("Only Pending appointments can be cancelled.")
         self.status = "Cancelled"
 
     def complete(self):
         if self.__status != "Confirmed":
             raise ValueError("Only Confirmed appointments can be marked as Completed.")
         self.status = "Completed"
+
+    @classmethod
+    def create_pending(
+        cls,
+        cursor,
+        patient_id: int,
+        slot_id: int,
+        purpose: str,
+        contact_number=None,
+    ) -> int:
+        appointment = cls(
+            patient_id=patient_id,
+            slot_id=slot_id,
+            purpose=purpose,
+            status="Pending",
+        )
+        cursor.execute(
+            """
+            INSERT INTO appointments (user_id, slot_id, purpose, contact_number, status)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (patient_id, slot_id, purpose, contact_number, appointment.status),
+        )
+        return cursor.lastrowid
 
     @staticmethod
     def fetch_by_id(appointment_id: int):

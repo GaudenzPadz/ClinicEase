@@ -1,51 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}ClinicEase - Appointment System{% endblock %}</title>
-    
-    <!-- Custom CSS -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FAF8F1">
+    <title>{% block title %}ClinicEase{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
-    {% block head %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    {% block page_css %}{% endblock %}
 </head>
 <body>
-
     <header class="header">
         <div class="container header-content">
-            <a href="/" class="brand">
-                <div class="brand-icon">CE</div>
-                <div>
-                    <div class="brand-title">ClinicEase</div>
-                    <div class="brand-subtitle">Appointment System</div>
-                </div>
+            <a class="brand" href="{{ url_for('home') }}" aria-label="ClinicEase home">
+                <span class="brand-icon" aria-hidden="true">CE</span>
+                <span class="brand-title">ClinicEase</span>
             </a>
 
-            <nav class="nav-actions">
-                <a href="/login" class="btn btn-outline btn-sm">Sign In</a>
-                <a href="/register" class="btn btn-primary btn-sm">Book Appointment</a>
+            <nav class="nav-actions" aria-label="Account navigation">
+                {% if session.get('role') %}
+                    <span class="nav-user">{{ session.get('name', 'Account') }}</span>
+                    <a class="btn btn-secondary btn-sm" href="{{ url_for('logout') }}">Log Out</a>
+                {% else %}
+                    <a class="btn btn-secondary btn-sm" href="{{ url_for('login_page') }}">Sign In</a>
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('register_page') }}">Create Account</a>
+                {% endif %}
             </nav>
         </div>
     </header>
 
     <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container" aria-live="polite">
+                    {% for category, message in messages %}
+                        <div class="alert {% if category in ['error', 'danger'] %}alert-error{% else %}alert-success{% endif %}"
+                             role="{% if category in ['error', 'danger'] %}alert{% else %}status{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
 
     <footer class="footer">
         <div class="container footer-content">
-            <div>
-                <strong>ClinicEase System &copy; 2026</strong>
-                <div>Web-Based Healthcare Appointment Management</div>
-            </div>
-            <div>
-                <div>Course: Object Oriented Programming</div>
-                <div>Proponents: Bautista, Benitez, Padullon | Instructor: Mr. John Romel Tinasas</div>
-            </div>
+            <span><strong>ClinicEase</strong> · Appointment care made easier.</span>
+            <span>&copy; 2026 ClinicEase</span>
         </div>
     </footer>
 
-    <!-- Custom JS -->
+    <div id="app-toast" class="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
     <script src="{{ url_for('static', filename='js/base.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>

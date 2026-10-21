@@ -1,0 +1,255 @@
+.auth-page {
+    max-width: 1080px;
+}
+
+.auth-page-login {
+    max-width: 560px;
+}
+
+.auth-page-create {
+    max-width: 1080px;
+}
+
+.auth-card {
+    margin-block: 24px;
+}
+
+.auth-heading {
+    margin-bottom: 22px;
+}
+
+.auth-heading p {
+    margin-top: 8px;
+}
+
+.auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 22px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-bg);
+}
+
+.auth-tab {
+    min-height: 48px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-heading);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.auth-tab[aria-selected="true"] {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+}
+
+#sign-in-panel {
+    max-width: 480px;
+    margin-inline: auto;
+}
+
+.registration-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(330px, 0.92fr);
+    align-items: start;
+    gap: 28px;
+    margin-bottom: 22px;
+}
+
+.registration-fields {
+    padding-top: 4px;
+}
+
+.registration-fields .form-group:last-child {
+    margin-bottom: 0;
+}
+
+.availability-panel {
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+}
+
+.availability-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.availability-heading h2 {
+    font-size: 20px;
+}
+
+.availability-heading p:not(.calendar-month) {
+    margin-top: 4px;
+    font-size: var(--text-caption);
+}
+
+.calendar-navigation {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 8px;
+}
+
+.calendar-nav-button {
+    width: 44px;
+    min-height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: var(--color-surface);
+    color: var(--color-text-heading);
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.calendar-nav-button:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    background: var(--color-pale-sage);
+}
+
+.calendar-nav-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.calendar-month {
+    color: var(--color-text-heading);
+    font-weight: 700;
+    text-align: center;
+}
+
+.availability-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(34px, 1fr));
+    gap: 4px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.calendar-weekday,
+.calendar-day,
+.calendar-empty {
+    display: grid;
+    min-width: 0;
+    min-height: 44px;
+    place-items: center;
+}
+
+.calendar-weekday {
+    color: var(--color-text-body);
+    font-size: var(--text-caption);
+    font-weight: 700;
+}
+
+.calendar-day {
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text-heading);
+    font-size: var(--text-caption);
+}
+
+.calendar-day--available {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+    cursor: pointer;
+    font-weight: 650;
+}
+
+.calendar-day--available:hover {
+    border-color: var(--color-primary);
+    background: var(--color-pale-sage);
+}
+
+.calendar-day[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-surface);
+}
+
+.calendar-day:disabled {
+    color: var(--color-text-body);
+}
+
+.available-times {
+    padding-top: 14px;
+}
+
+.available-times h3 {
+    font-size: 16px;
+}
+
+.available-times-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.available-time-button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text-heading);
+    cursor: pointer;
+    font-size: var(--text-caption);
+    font-weight: 600;
+}
+
+.available-time-button:hover,
+.available-time-button[aria-pressed="true"] {
+    border-color: var(--color-primary);
+    background: var(--color-pale-sage);
+}
+
+.available-time-button[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.availability-message {
+    margin-bottom: 12px;
+}
+
+.calendar-feedback {
+    margin: 12px 0 0;
+}
+
+@media (max-width: 760px) {
+    .registration-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .availability-panel {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 18px;
+    }
+
+    .availability-calendar {
+        gap: 2px;
+    }
+
+    .calendar-weekday,
+    .calendar-day,
+    .calendar-empty {
+        min-height: 44px;
+    }
+}

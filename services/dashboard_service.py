@@ -15,7 +15,13 @@ class BaseDashboard(ABC):
 class PatientDashboard(BaseDashboard):
     def get_slots(self):
         cursor = self.db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM appointment_slots WHERE status = 'Available'")
+        cursor.execute(
+            """
+            SELECT * FROM appointment_slots
+            WHERE status = 'Available' AND slot_date >= CURRENT_DATE
+            ORDER BY slot_date ASC, time ASC
+            """
+        )
         slots = cursor.fetchall()
         cursor.close()
         return slots
@@ -24,7 +30,17 @@ class PatientDashboard(BaseDashboard):
 class StaffDashboard(BaseDashboard):
     def get_slots(self):
         cursor = self.db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM appointment_slots")
+        cursor.execute(
+            """
+            SELECT slots.*,
+                   EXISTS (
+                       SELECT 1 FROM appointments
+                       WHERE appointments.slot_id = slots.slot_id
+                   ) AS has_appointments
+            FROM appointment_slots AS slots
+            ORDER BY slots.slot_date ASC, slots.time ASC
+            """
+        )
         slots = cursor.fetchall()
         cursor.close()
         return slots

@@ -1,24 +1,34 @@
+import os
+
 import mysql.connector
+from dotenv import load_dotenv
 from mysql.connector import Error
 
-# Centralized Database Configuration
-DB_CONFIG = {
-    "host": "localhost",
-    "database": "clinicease_db",
-    "user": "root",
-    "password": "newrootpassword123",
-}
+load_dotenv()  # Reads .env from the current project directory
 
 
 def get_connection():
-    """
-    Establishes and returns an active MySQL database connection.
-    Returns None if the connection fails.
-    """
+    """Return a MySQL connection, or None if configuration or connection fails."""
+    config = {
+        "host": os.getenv("CLINICEASE_DB_HOST", "localhost"),
+        "port": int(os.getenv("CLINICEASE_DB_PORT", "3306")),
+        "database": os.getenv("CLINICEASE_DB_NAME", "clinicease_db"),
+        "user": os.getenv("CLINICEASE_DB_USER", "root"),
+        "password": os.getenv("CLINICEASE_DB_PASSWORD"),
+    }
+
+    if not config["password"]:
+        print("[DATABASE ERROR] CLINICEASE_DB_PASSWORD is missing from .env.")
+        return None
+
     try:
-        connection = mysql.connector.connect(**DB_CONFIG)
+        connection = mysql.connector.connect(**config)
         if connection.is_connected():
             return connection
-    except Error as e:
-        print(f"[DATABASE ERROR] Failed to connect to MySQL: {e}")
-        return None
+
+        connection.close()
+    except Error as exc:
+        # Avoid printing connection details or credentials in logs.
+        print(f"[DATABASE ERROR] MySQL connection failed ({exc.__class__.__name__}).")
+
+    return None

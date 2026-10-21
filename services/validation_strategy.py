@@ -8,26 +8,44 @@ from database import get_connection
 class BookingValidationStrategy(ABC):
     @abstractmethod
     def validate(
-        self, patient_id: int, slot: AppointmentSlot, db_connection=None
+        self, patient_id: Optional[int], slot: Optional[AppointmentSlot], db_connection=None
     ) -> Tuple[bool, Optional[str]]:
         pass
 
 
 class StandardValidationStrategy(BookingValidationStrategy):
     def validate(
-        self, patient_id: int, slot: AppointmentSlot, db_connection=None
+        self, patient_id: Optional[int], slot: Optional[AppointmentSlot], db_connection=None
     ) -> Tuple[bool, Optional[str]]:
         if not slot or not slot.is_available():
             return False, "This appointment slot is no longer available. Please select another slot."
         return True, None
 
 
+class RegistrationBookingValidationStrategy:
+    """Validates the database-dependent branches of the combined sign-up flow."""
+
+    def validate(
+        self, email_available: bool, slot: Optional[AppointmentSlot]
+    ) -> Tuple[bool, Optional[str]]:
+        if not email_available:
+            return False, "This email is already registered."
+        if not slot or not slot.is_available():
+            return (
+                False,
+                "This appointment slot is no longer available. Please select another slot.",
+            )
+        return True, None
+
+
 class StrictValidationStrategy(BookingValidationStrategy):
     def validate(
-        self, patient_id: int, slot: AppointmentSlot, db_connection=None
+        self, patient_id: Optional[int], slot: Optional[AppointmentSlot], db_connection=None
     ) -> Tuple[bool, Optional[str]]:
         if not slot or not slot.is_available():
             return False, "This appointment slot is no longer available. Please select another slot."
+        if patient_id is None:
+            return False, "Patient information is required for booking validation."
 
         conn = db_connection or get_connection()
         if not conn:
