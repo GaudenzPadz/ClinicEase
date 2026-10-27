@@ -1,77 +1,1467 @@
 {% extends "base.html" %}
-{% block title %}ClinicEase - Healthcare Appointment System{% endblock %}
+
+{% block title %}ClinicEase | Appointment System{% endblock %}
+
 {% block page_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/landing.css') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+    .presentation {
+        --pres-ink: #34443A;
+        --pres-muted: #647268;
+        --pres-line: rgba(72, 107, 82, .16);
+        --pres-shadow: 0 18px 50px rgba(52, 68, 58, .08);
+        overflow: clip;
+        color: var(--color-text-body);
+    }
+
+    .presentation *,
+    .presentation *::before,
+    .presentation *::after {
+        box-sizing: border-box;
+    }
+
+    .presentation section {
+        position: relative;
+        isolation: isolate;
+        display: grid;
+        min-height: 100vh;
+        min-height: 100svh;
+        align-items: center;
+        padding: clamp(76px, 9vh, 112px) 32px;
+        overflow: hidden;
+        scroll-margin-top: 0;
+    }
+
+    .presentation .section-inner {
+        width: min(100%, 1160px);
+        margin-inline: auto;
+    }
+
+    .presentation .section-heading {
+        max-width: 760px;
+        margin-bottom: clamp(32px, 5vh, 52px);
+    }
+
+    .presentation .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        color: var(--color-primary);
+        font-size: 13px;
+        font-weight: 750;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+    }
+
+    .presentation .eyebrow::before {
+        width: 24px;
+        height: 2px;
+        background: currentColor;
+        content: "";
+    }
+
+    .presentation h1,
+    .presentation h2,
+    .presentation h3,
+    .presentation p {
+        margin: 0;
+    }
+
+    .presentation h1,
+    .presentation h2 {
+        color: var(--pres-ink);
+        font-weight: 750;
+        letter-spacing: -.045em;
+    }
+
+    .presentation h1 {
+        max-width: 760px;
+        font-size: clamp(48px, 7vw, 82px);
+        line-height: 1.02;
+    }
+
+    .presentation h2 {
+        font-size: clamp(36px, 4vw, 48px);
+        line-height: 1.12;
+    }
+
+    .presentation h3 {
+        color: var(--pres-ink);
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -.015em;
+        line-height: 1.35;
+    }
+
+    .presentation .section-subtitle {
+        margin-top: 14px;
+        color: var(--color-primary);
+        font-size: clamp(20px, 2.3vw, 25px);
+        font-weight: 600;
+        line-height: 1.4;
+    }
+
+    .presentation .section-copy {
+        max-width: 690px;
+        margin-top: 12px;
+        color: var(--pres-muted);
+        font-size: 17px;
+        line-height: 1.75;
+    }
+
+    .presentation .material-symbols-outlined {
+        font-size: 36px;
+        font-weight: 400;
+        line-height: 1;
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 40;
+    }
+
+    .presentation .card {
+        min-width: 0;
+        padding: 27px;
+        border: 1px solid var(--color-border);
+        border-radius: 18px;
+        background: var(--color-surface);
+        box-shadow: var(--pres-shadow);
+        transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .presentation .card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(72, 107, 82, .34);
+        box-shadow: 0 24px 55px rgba(52, 68, 58, .12);
+    }
+
+    .presentation .card p {
+        margin-top: 10px;
+        color: var(--pres-muted);
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .presentation .icon-tile {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 23px;
+        border: 1px solid rgba(72, 107, 82, .12);
+        border-radius: 17px;
+        background: var(--color-pale-sage);
+        color: var(--color-primary);
+    }
+
+    .presentation .icon-tile.warning {
+        background: #F8EDE5;
+        color: #985B3F;
+    }
+
+    .presentation .icon-tile.success {
+        background: #E7F1E7;
+        color: var(--color-primary);
+    }
+
+    .presentation .grid {
+        display: grid;
+        gap: 18px;
+    }
+
+    .presentation .grid-5 {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .presentation .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .presentation .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .presentation .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .presentation .slide-number {
+        position: absolute;
+        right: max(32px, calc((100vw - 1160px) / 2));
+        bottom: 28px;
+        color: #89948B;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        letter-spacing: .14em;
+    }
+
+    .presentation .hero-section {
+        min-height: min(900px, 100vh);
+        min-height: min(900px, 100svh);
+        background:
+            radial-gradient(ellipse at 82% 48%, rgba(206, 224, 205, .7), transparent 35%),
+            linear-gradient(120deg, #FAF8F1 0%, #F7F6EF 52%, #EEF3EA 100%);
+    }
+
+    .presentation .hero-section::before,
+    .presentation .hero-section::after {
+        position: absolute;
+        z-index: -1;
+        border: 1px solid rgba(72, 107, 82, .12);
+        border-radius: 50%;
+        content: "";
+    }
+
+    .presentation .hero-section::before {
+        width: 560px;
+        height: 560px;
+        top: 50%;
+        right: -100px;
+        transform: translateY(-50%);
+    }
+
+    .presentation .hero-section::after {
+        width: 430px;
+        height: 430px;
+        top: 50%;
+        right: -35px;
+        transform: translateY(-50%);
+    }
+
+    .presentation .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+        align-items: center;
+        gap: clamp(44px, 7vw, 100px);
+    }
+
+    .presentation .hero-title-mark {
+        display: block;
+        margin-bottom: 16px;
+        color: var(--color-primary);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: .18em;
+        text-transform: uppercase;
+    }
+
+    .presentation .hero-subtitle {
+        max-width: 680px;
+        margin-top: 22px !important;
+        color: #59675D;
+        font-size: clamp(18px, 2vw, 22px);
+        line-height: 1.65;
+    }
+
+    .presentation .hero-meta {
+        display: grid;
+        gap: 13px;
+        margin-top: 27px;
+        color: #637066;
+        font-size: 13px;
+        line-height: 1.65;
+    }
+
+    .presentation .hero-meta strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--pres-ink);
+        font-size: 11px;
+        letter-spacing: .11em;
+        text-transform: uppercase;
+    }
+
+    .presentation .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 31px;
+    }
+
+    .presentation .hero-actions .btn {
+        min-height: 52px;
+        padding: 12px 21px;
+        border-radius: 10px;
+        font-weight: 650;
+    }
+
+    .presentation .hero-actions .btn-secondary {
+        border-color: rgba(72, 107, 82, .25);
+    }
+
+    .presentation .hero-visual {
+        position: relative;
+        padding: 18px;
+        border: 1px solid rgba(255, 255, 255, .82);
+        border-radius: 28px;
+        background: rgba(255, 255, 255, .68);
+        box-shadow: 0 28px 80px rgba(52, 68, 58, .14);
+        backdrop-filter: blur(12px);
+    }
+
+    .presentation .visual-topline {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 8px 7px 19px;
+        color: #758177;
+        font-size: 12px;
+    }
+
+    .presentation .visual-topline strong {
+        color: var(--pres-ink);
+        font-size: 15px;
+    }
+
+    .presentation .visual-slot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 16px;
+        border: 1px solid #E8EDE5;
+        border-radius: 14px;
+        background: #FFF;
+    }
+
+    .presentation .visual-slot + .visual-slot {
+        margin-top: 10px;
+    }
+
+    .presentation .visual-slot strong {
+        display: block;
+        color: var(--pres-ink);
+        font-size: 15px;
+    }
+
+    .presentation .visual-slot small {
+        color: #7D887F;
+        font-size: 12px;
+    }
+
+    .presentation .slot-pill {
+        padding: 5px 10px;
+        border-radius: 99px;
+        background: var(--status-completed-bg);
+        color: var(--status-completed-text);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .presentation .slot-pill.pending {
+        background: var(--status-pending-bg);
+        color: var(--status-pending-text);
+    }
+
+    .presentation .hero-footnote {
+        margin-top: 17px !important;
+        color: #718076;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .presentation .scroll-cue {
+        position: absolute;
+        bottom: 25px;
+        left: 50%;
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        transform: translateX(-50%);
+        color: #77847A;
+        font-size: 11px;
+        font-weight: 650;
+        letter-spacing: .13em;
+        text-decoration: none;
+        text-transform: uppercase;
+    }
+
+    .presentation .scroll-cue .material-symbols-outlined {
+        font-size: 20px;
+        animation: cue-bob 1.8s ease-in-out infinite;
+    }
+
+    @keyframes cue-bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(5px); }
+    }
+
+    .presentation .problem-section,
+    .presentation .status-section {
+        background:
+            radial-gradient(ellipse at 95% 15%, rgba(229, 238, 227, .75), transparent 29%),
+            var(--color-bg);
+    }
+
+    .presentation .solution-section,
+    .presentation .oop-section {
+        background:
+            radial-gradient(ellipse at 100% 0%, rgba(125, 159, 126, .28), transparent 35%),
+            #344A3B;
+        color: #EDF3EA;
+    }
+
+    .presentation .solution-section h2,
+    .presentation .oop-section h2 {
+        color: #F6F7F0;
+    }
+
+    .presentation .solution-section .section-subtitle,
+    .presentation .oop-section .section-subtitle {
+        color: #C7DBC8;
+    }
+
+    .presentation .solution-section .section-copy,
+    .presentation .oop-section .section-copy {
+        color: #D1DDD1;
+    }
+
+    .presentation .solution-section .eyebrow,
+    .presentation .oop-section .eyebrow {
+        color: #B7D1B8;
+    }
+
+    .presentation .solution-section .card {
+        border-color: rgba(239, 247, 237, .14);
+        background: rgba(255, 255, 255, .96);
+    }
+
+    .presentation .roles-section {
+        background: linear-gradient(135deg, #F8F7F1 0%, #EFF4EC 100%);
+    }
+
+    .presentation .role-card {
+        padding: clamp(26px, 4vw, 40px);
+        border-radius: 22px;
+    }
+
+    .presentation .role-card .icon-tile {
+        width: 68px;
+        height: 68px;
+    }
+
+    .presentation .role-card .material-symbols-outlined {
+        font-size: 42px;
+    }
+
+    .presentation .role-list {
+        display: grid;
+        gap: 15px;
+        padding: 0;
+        margin: 24px 0 0;
+        list-style: none;
+    }
+
+    .presentation .role-list li {
+        display: grid;
+        grid-template-columns: 24px 1fr;
+        align-items: start;
+        gap: 11px;
+        color: #526057;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .presentation .role-list .material-symbols-outlined {
+        color: var(--color-primary);
+        font-size: 21px;
+    }
+
+    .presentation .workflow-section {
+        background:
+            radial-gradient(ellipse at 5% 100%, rgba(229, 238, 227, .85), transparent 32%),
+            #FAF8F1;
+    }
+
+    .presentation .workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 42px;
+    }
+
+    .presentation .workflow-card {
+        position: relative;
+        padding-top: 32px;
+    }
+
+    .presentation .workflow-card:not(:last-child)::after {
+        position: absolute;
+        top: 52px;
+        right: -38px;
+        color: #96A899;
+        content: "east";
+        font-family: "Material Symbols Outlined";
+        font-size: 29px;
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 32;
+    }
+
+    .presentation .step-number {
+        position: absolute;
+        top: -19px;
+        left: 25px;
+        width: 41px;
+        height: 41px;
+        display: grid;
+        place-items: center;
+        border: 4px solid var(--color-bg);
+        border-radius: 50%;
+        background: var(--color-primary);
+        color: white;
+        font-size: 14px;
+        font-weight: 750;
+    }
+
+    .presentation .workflow-card .icon-tile {
+        margin-bottom: 20px;
+    }
+
+    .presentation .status-flow {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-areas:
+            "pending first-arrow confirmed second-arrow completed"
+            "cancelled cancelled . . .";
+        align-items: center;
+        gap: 20px;
+    }
+
+    .presentation .pending-card { grid-area: pending; }
+    .presentation .confirm-arrow { grid-area: first-arrow; }
+    .presentation .confirmed-card { grid-area: confirmed; }
+    .presentation .complete-arrow { grid-area: second-arrow; }
+    .presentation .completed-card { grid-area: completed; }
+    .presentation .cancelled-card {
+        grid-area: cancelled;
+        max-width: 100%;
+    }
+
+    .presentation .cancel-path {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 12px;
+        color: #77847A;
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+    .presentation .cancel-path .material-symbols-outlined {
+        font-size: 17px;
+    }
+
+    .presentation .status-card {
+        min-height: 185px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 24px;
+        border: 1px solid var(--color-border);
+        border-radius: 18px;
+        background: var(--color-surface);
+        box-shadow: var(--pres-shadow);
+    }
+
+    .presentation .status-card p {
+        margin-top: 16px;
+        color: var(--pres-muted);
+        font-size: 14px;
+        line-height: 1.65;
+    }
+
+    .presentation .status-badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 31px;
+        padding: 5px 12px;
+        border-radius: 99px;
+        font-size: 13px;
+        font-weight: 750;
+    }
+
+    .presentation .status-pending {
+        background: var(--status-pending-bg);
+        color: var(--status-pending-text);
+    }
+
+    .presentation .status-confirmed {
+        background: var(--status-confirmed-bg);
+        color: var(--status-confirmed-text);
+    }
+
+    .presentation .status-cancelled {
+        background: var(--status-cancelled-bg);
+        color: var(--status-cancelled-text);
+    }
+
+    .presentation .status-completed {
+        background: var(--status-completed-bg);
+        color: var(--status-completed-text);
+    }
+
+    .presentation .flow-arrow {
+        color: #8DA18F;
+        font-family: "Material Symbols Outlined";
+        font-size: 30px;
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 32;
+    }
+
+    .presentation .lifecycle-note {
+        max-width: 900px;
+        padding: 17px 20px;
+        margin: 27px auto 0;
+        border-left: 3px solid var(--color-primary);
+        border-radius: 0 10px 10px 0;
+        background: #EDF3EA;
+        color: #4A5B4E;
+        font-size: 14px;
+        line-height: 1.65;
+    }
+
+    .presentation .rules-section {
+        background: linear-gradient(130deg, #EDF3EA 0%, #FAF8F1 56%, #F5F2E8 100%);
+    }
+
+    .presentation .rule-card {
+        min-height: 245px;
+    }
+
+    .presentation .quote {
+        display: block;
+        padding: 13px 15px;
+        margin-top: 14px;
+        border-radius: 10px;
+        background: #F1F4EF;
+        color: #415247;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .presentation .oop-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+        align-items: start;
+        gap: 22px;
+    }
+
+    .presentation .oop-panel {
+        padding: 28px;
+        border: 1px solid rgba(234, 243, 232, .18);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, .07);
+    }
+
+    .presentation .oop-panel h3 {
+        margin-bottom: 20px;
+        color: #F5F7F1;
+        font-size: 17px;
+    }
+
+    .presentation .class-tree {
+        display: grid;
+        justify-items: center;
+        padding: 9px 0 20px;
+    }
+
+    .presentation .class-node {
+        display: inline-flex;
+        min-width: 140px;
+        justify-content: center;
+        padding: 11px 18px;
+        border: 1px solid rgba(202, 226, 202, .42);
+        border-radius: 11px;
+        background: rgba(204, 228, 203, .11);
+        color: #E6F0E4;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .presentation .class-node.parent {
+        border-color: #B5D2B5;
+        background: #E4EFE1;
+        color: #344A3B;
+    }
+
+    .presentation .tree-connector {
+        width: 1px;
+        height: 24px;
+        background: rgba(206, 226, 205, .62);
+    }
+
+    .presentation .child-nodes {
+        position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 17px;
+        padding-top: 15px;
+    }
+
+    .presentation .child-nodes::before {
+        position: absolute;
+        top: 0;
+        right: 25%;
+        left: 25%;
+        height: 1px;
+        background: rgba(206, 226, 205, .62);
+        content: "";
+    }
+
+    .presentation .child-nodes .class-node::before {
+        position: absolute;
+        top: -15px;
+        width: 1px;
+        height: 15px;
+        background: rgba(206, 226, 205, .62);
+        content: "";
+    }
+
+    .presentation .method-signature {
+        display: block;
+        padding: 12px 15px;
+        border: 1px solid rgba(194, 219, 192, .2);
+        border-radius: 10px;
+        background: rgba(15, 30, 20, .22);
+        color: #D9ECD6;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 13px;
+        text-align: center;
+    }
+
+    .presentation .oop-note {
+        margin-top: 18px !important;
+        color: #D0DED0;
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .presentation .oop-note code,
+    .presentation .core-list code {
+        padding: 2px 6px;
+        border: 1px solid rgba(190, 218, 188, .2);
+        border-radius: 5px;
+        background: rgba(13, 28, 18, .25);
+        color: #E3F0DF;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: .92em;
+    }
+
+    .presentation .core-list {
+        display: grid;
+        gap: 13px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+    }
+
+    .presentation .core-list li {
+        color: #D5E0D4;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .presentation .pattern-label {
+        margin: 25px 0 12px;
+        color: #C5D7C4;
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: .14em;
+        text-transform: uppercase;
+    }
+
+    .presentation .pattern-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .presentation .pattern-chip {
+        padding: 7px 10px;
+        border: 1px solid rgba(202, 226, 202, .2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, .06);
+        color: #E2EDE0;
+        font-size: 12px;
+    }
+
+    .presentation .closing-section {
+        background:
+            radial-gradient(ellipse at 78% 8%, rgba(153, 187, 147, .35), transparent 36%),
+            linear-gradient(135deg, #304639 0%, #3B5744 52%, #486B52 100%);
+        color: #EDF3EA;
+    }
+
+    .presentation .closing-section h2 {
+        max-width: 850px;
+        color: #FAFBF7;
+        font-size: clamp(40px, 5vw, 60px);
+    }
+
+    .presentation .closing-section .eyebrow {
+        color: #C4DCC1;
+    }
+
+    .presentation .stack-grid {
+        margin-top: 35px;
+    }
+
+    .presentation .stack-card {
+        min-height: 150px;
+        border-color: rgba(241, 247, 238, .18);
+        background: rgba(255, 255, 255, .08);
+        box-shadow: none;
+    }
+
+    .presentation .stack-card h3 {
+        color: #F4F7F0;
+    }
+
+    .presentation .stack-card p {
+        color: #D4E0D2;
+    }
+
+    .presentation .closing-section .btn-secondary {
+        border-color: rgba(244, 249, 241, .45);
+        background: transparent;
+        color: #F7FAF4;
+    }
+
+    .presentation .closing-section .btn-secondary:hover {
+        background: rgba(255, 255, 255, .12);
+    }
+
+    .presentation .presentation-footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        padding-top: 24px;
+        margin-top: clamp(38px, 6vh, 65px);
+        border-top: 1px solid rgba(236, 245, 232, .2);
+        color: #D6E1D3;
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .presentation .presentation-footer strong {
+        color: #F6F8F3;
+    }
+
+    .presentation .section-dots {
+        position: fixed;
+        z-index: 20;
+        top: 50%;
+        right: 22px;
+        display: grid;
+        gap: 11px;
+        padding: 12px 9px;
+        transform: translateY(-50%);
+        border: 1px solid rgba(72, 107, 82, .12);
+        border-radius: 99px;
+        background: rgba(250, 248, 241, .8);
+        box-shadow: 0 8px 25px rgba(52, 68, 58, .08);
+        backdrop-filter: blur(10px);
+    }
+
+    .presentation .section-dots a {
+        position: relative;
+        width: 12px;
+        height: 12px;
+        display: block;
+        border: 0;
+        border-radius: 50%;
+        background: #C5CEC5;
+        transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .presentation .section-dots a:hover,
+    .presentation .section-dots a[aria-current="step"] {
+        transform: scale(1.3);
+        background: var(--color-primary);
+    }
+
+    .presentation .section-dots a:focus-visible {
+        outline: 3px solid #87A58A;
+        outline-offset: 4px;
+    }
+
+    .presentation.js .reveal {
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 650ms ease, transform 650ms cubic-bezier(.2, .7, .2, 1);
+    }
+
+    .presentation.js .reveal.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .presentation .reveal-delay-1 { transition-delay: 80ms !important; }
+    .presentation .reveal-delay-2 { transition-delay: 150ms !important; }
+    .presentation .reveal-delay-3 { transition-delay: 220ms !important; }
+    .presentation .reveal-delay-4 { transition-delay: 290ms !important; }
+
+    @media (max-width: 1050px) {
+        .presentation .grid-5 {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .presentation .status-flow {
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "pending"
+                "first-arrow"
+                "confirmed"
+                "complete-arrow"
+                "completed"
+                "cancelled";
+        }
+
+        .presentation .status-flow > .flow-arrow {
+            justify-self: center;
+            transform: rotate(90deg);
+        }
+    }
+
+    @media (max-width: 760px) {
+        .presentation section {
+            min-height: auto;
+            min-height: max(100svh, 720px);
+            padding: 76px 24px;
+        }
+
+        .presentation .hero-grid,
+        .presentation .oop-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .presentation .hero-visual {
+            max-width: 520px;
+        }
+
+        .presentation .grid-4,
+        .presentation .grid-3 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .presentation .grid-5 {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .presentation .workflow-grid {
+            grid-template-columns: 1fr;
+            gap: 28px;
+        }
+
+        .presentation .workflow-card:not(:last-child)::after {
+            top: auto;
+            right: 24px;
+            bottom: -31px;
+            transform: rotate(90deg);
+        }
+
+        .presentation .status-flow {
+            grid-template-columns: 1fr;
+            grid-template-areas:
+                "pending"
+                "first-arrow"
+                "confirmed"
+                "complete-arrow"
+                "completed"
+                "cancelled";
+        }
+
+        .presentation .status-flow > .flow-arrow {
+            justify-self: center;
+            transform: rotate(90deg);
+        }
+
+        .presentation .complete-arrow {
+            display: block;
+        }
+
+        .presentation .cancelled-card {
+            max-width: none;
+        }
+
+        .presentation .status-card {
+            min-height: 155px;
+        }
+
+        .presentation .section-dots {
+            right: 10px;
+            gap: 9px;
+            padding: 10px 7px;
+        }
+
+        .presentation .section-dots a {
+            width: 10px;
+            height: 10px;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .presentation section {
+            padding: 68px 20px;
+        }
+
+        .presentation .grid-2,
+        .presentation .grid-3,
+        .presentation .grid-4,
+        .presentation .grid-5 {
+            grid-template-columns: 1fr;
+        }
+
+        .presentation .section-heading {
+            margin-bottom: 30px;
+        }
+
+        .presentation .card {
+            padding: 23px;
+        }
+
+        .presentation .hero-actions {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .presentation .hero-actions .btn {
+            width: 100%;
+        }
+
+        .presentation .status-branches {
+            grid-template-columns: 1fr;
+        }
+
+        .presentation .slide-number {
+            right: 20px;
+            bottom: 18px;
+        }
+
+        .presentation .scroll-cue {
+            bottom: 17px;
+        }
+
+        .presentation .section-dots {
+            top: auto;
+            right: 50%;
+            bottom: 10px;
+            display: flex;
+            transform: translateX(50%);
+        }
+
+        .presentation .slide-number {
+            display: none;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .presentation *,
+        .presentation *::before,
+        .presentation *::after {
+            scroll-behavior: auto !important;
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+        }
+
+        .presentation.js .reveal {
+            opacity: 1;
+            transform: none;
+        }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <span class="badge-pill">Centralized Clinic Scheduling</span>
-        <h1 class="hero-title">Simple, transparent clinic appointments for everyone.</h1>
-        <p class="hero-description">
-            Choose an available time, request a clinic visit, and follow its status as staff review it.
-        </p>
-        <div class="hero-actions">
-            <a href="{{ url_for('register_page') }}" class="btn btn-primary">Book an Appointment</a>
-            <a href="{{ url_for('login_page') }}" class="btn btn-secondary">Sign In</a>
+<div class="presentation" id="presentation">
+    <nav class="section-dots" aria-label="Presentation sections">
+        <a href="#hero" aria-label="Go to section 1: ClinicEase introduction" aria-current="step"></a>
+        <a href="#problem" aria-label="Go to section 2: The Problem"></a>
+        <a href="#solution" aria-label="Go to section 3: The Solution"></a>
+        <a href="#roles" aria-label="Go to section 4: Who Uses It"></a>
+        <a href="#workflow" aria-label="Go to section 5: Workflow"></a>
+        <a href="#statuses" aria-label="Go to section 6: Appointment Statuses"></a>
+        <a href="#rules" aria-label="Go to section 7: Business Rules"></a>
+        <a href="#design" aria-label="Go to section 8: Object-Oriented Design"></a>
+        <a href="#closing" aria-label="Go to section 9: Stack and Team"></a>
+    </nav>
+
+    <section class="hero-section" id="hero" aria-labelledby="hero-title">
+        <div class="section-inner hero-grid">
+            <div class="reveal">
+                <span class="hero-title-mark">ClinicEase · Midterm Defense · October 2026</span>
+                <h1 id="hero-title">ClinicEase:<br>Appointment System</h1>
+                <p class="hero-subtitle">Design and Development of a Web-Based Appointment System for a Small Healthcare Clinic</p>
+                <div class="hero-meta">
+                    <div><strong>Course</strong>Object Oriented Programming</div>
+                    <div><strong>Proponents</strong>BAUTISTA, Andray Mar B. &nbsp;|&nbsp; BENITEZ, Ken Cyrus P. &nbsp;|&nbsp; PADULLON, Gaudenz R.</div>
+                    <div><strong>Instructor</strong>Mr. Tinasas, John Romel</div>
+                </div>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="{{ url_for('register_page') }}">Book an Appointment <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+                    <a class="btn btn-secondary" href="{{ url_for('login_page') }}">Sign In</a>
+                </div>
+            </div>
+            <div class="hero-visual reveal reveal-delay-2" aria-label="Example clinic appointment slots">
+                <div class="visual-topline"><strong>Available appointments</strong><span>October 2026</span></div>
+                <div class="visual-slot"><div><strong>9:00 AM</strong><small>Monday · October 12</small></div><span class="slot-pill">Available</span></div>
+                <div class="visual-slot"><div><strong>9:30 AM</strong><small>Monday · October 12</small></div><span class="slot-pill">Available</span></div>
+                <div class="visual-slot"><div><strong>10:00 AM</strong><small>Monday · October 12</small></div><span class="slot-pill pending">Booked</span></div>
+                <div class="visual-slot"><div><strong>10:30 AM</strong><small>Monday · October 12</small></div><span class="slot-pill">Available</span></div>
+                <p class="hero-footnote">One clear view. Better appointment coordination.</p>
+            </div>
         </div>
+        <a class="scroll-cue" href="#problem"><span>Scroll to explore</span><span class="material-symbols-outlined" aria-hidden="true">keyboard_arrow_down</span></a>
+        <span class="slide-number">01 / 09</span>
+    </section>
+
+    <section class="problem-section" id="problem" aria-labelledby="problem-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">The Problem</span>
+                <h2 id="problem-title">Manual appointments are hard to manage.</h2>
+                <p class="section-copy">Small clinics still rely on calls, visits, and informal records. Five problems follow from that.</p>
+            </header>
+            <div class="grid grid-5">
+                <article class="card reveal">
+                    <div class="icon-tile warning"><span class="material-symbols-outlined" aria-hidden="true">phone_disabled</span></div>
+                    <h3>Manual requests</h3><p>Patients must contact or visit the clinic.</p>
+                </article>
+                <article class="card reveal reveal-delay-1">
+                    <div class="icon-tile warning"><span class="material-symbols-outlined" aria-hidden="true">visibility_off</span></div>
+                    <h3>Limited visibility</h3><p>Open dates and times are hard to see.</p>
+                </article>
+                <article class="card reveal reveal-delay-2">
+                    <div class="icon-tile warning"><span class="material-symbols-outlined" aria-hidden="true">folder_off</span></div>
+                    <h3>Disorganized info</h3><p>Staff struggle to keep records updated.</p>
+                </article>
+                <article class="card reveal reveal-delay-3">
+                    <div class="icon-tile warning"><span class="material-symbols-outlined" aria-hidden="true">c</span></div>
+                    <h3>Conflicts</h3><p>Several patients may request one slot.</p>
+                </article>
+                <article class="card reveal reveal-delay-4">
+                    <div class="icon-tile warning"><span class="material-symbols-outlined" aria-hidden="true">help_outline</span></div>
+                    <h3>Unclear status</h3><p>Patients don't know where a request stands.</p>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">02 / 09</span>
+    </section>
+
+    <section class="solution-section" id="solution" aria-labelledby="solution-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">The Solution</span>
+                <h2 id="solution-title">One web system for the whole clinic.</h2>
+                <p class="section-copy">ClinicEase centralizes slots, requests, and statuses so patients and staff see the same up-to-date picture.</p>
+            </header>
+            <div class="grid grid-4">
+                <article class="card reveal">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></div>
+                    <h3>See slots</h3><p>Slot availability is easy to see.</p>
+                </article>
+                <article class="card reveal reveal-delay-1">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">lock_person</span></div>
+                    <h3>One per slot</h3><p>Each slot goes to only one appointment.</p>
+                </article>
+                <article class="card reveal reveal-delay-2">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">dashboard</span></div>
+                    <h3>Right screens</h3><p>Patients and staff each get what they need.</p>
+                </article>
+                <article class="card reveal reveal-delay-3">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">check_circle</span></div>
+                    <h3>Clear actions</h3><p>Important actions stay clear and predictable.</p>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">03 / 09</span>
+    </section>
+
+    <section class="roles-section" id="roles" aria-labelledby="roles-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">Who Uses It</span>
+                <h2 id="roles-title">Two roles, one website.</h2>
+                <p class="section-copy">After login, the system opens the dashboard that matches the user's role.</p>
+            </header>
+            <div class="grid grid-2">
+                <article class="card role-card reveal">
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">person</span></div>
+                    <h3>Patient</h3>
+                    <ul class="role-list">
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Log in and view available slots</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Select a date and time</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Submit an appointment request</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>View own appointments and status</span></li>
+                    </ul>
+                </article>
+                <article class="card role-card reveal reveal-delay-1">
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">badge</span></div>
+                    <h3>Clinic Staff / Receptionist</h3>
+                    <ul class="role-list">
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Create, update, disable, or remove slots</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>View appointment requests</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Confirm or cancel requests</span></li>
+                        <li><span class="material-symbols-outlined" aria-hidden="true">check</span><span>Update status including Completed</span></li>
+                    </ul>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">04 / 09</span>
+    </section>
+
+    <section class="workflow-section" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">Workflow</span>
+                <h2 id="workflow-title">How ClinicEase Works</h2>
+                <p class="section-copy">A straightforward three-step workflow designed for patients and healthcare providers.</p>
+            </header>
+            <div class="workflow-grid">
+                <article class="card workflow-card reveal">
+                    <span class="step-number">1</span>
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">calendar_month</span></div>
+                    <h3>Choose a slot</h3>
+                    <p>The patient logs in and sees only slots marked Available. Staff create these slots; patients cannot invent times.</p>
+                </article>
+                <article class="card workflow-card reveal reveal-delay-1">
+                    <span class="step-number">2</span>
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">event_available</span></div>
+                    <h3>Submit and confirm</h3>
+                    <p>The patient fills in contact details and purpose, then answers "Save this appointment?". The system re-checks the slot right before saving.</p>
+                </article>
+                <article class="card workflow-card reveal reveal-delay-2">
+                    <span class="step-number">3</span>
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">notifications_active</span></div>
+                    <h3>Staff review</h3>
+                    <p>The request is saved as Pending. Staff confirm or cancel it, and the patient is notified in the app and by email.</p>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">05 / 09</span>
+    </section>
+
+    <section class="status-section" id="statuses" aria-labelledby="statuses-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">Statuses</span>
+                <h2 id="statuses-title">Appointment Status Lifecycle</h2>
+                <p class="section-copy">Clear visual indicators keep all parties informed at every stage.</p>
+            </header>
+            <div class="status-flow reveal">
+                <article class="status-card pending-card">
+                    <span class="status-badge status-pending">Pending</span>
+                    <p>Request saved. Waiting for staff review. The slot is Booked.</p>
+                </article>
+                <span class="flow-arrow confirm-arrow" aria-hidden="true">east</span>
+                <article class="status-card confirmed-card">
+                    <span class="status-badge status-confirmed">Confirmed</span>
+                    <p>Staff approved the request.</p>
+                </article>
+                <span class="flow-arrow complete-arrow" aria-hidden="true">east</span>
+                <article class="status-card completed-card">
+                    <span class="status-badge status-completed">Completed</span>
+                    <p>The appointment took place. Only a Confirmed appointment can reach this.</p>
+                </article>
+                <article class="status-card cancelled-card">
+                    <span class="cancel-path"><span class="material-symbols-outlined" aria-hidden="true">south</span>Pending can also move here</span>
+                    <span class="status-badge status-cancelled">Cancelled</span>
+                    <p>Staff cancelled. The slot becomes Available again.</p>
+                </article>
+            </div>
+            <p class="lifecycle-note reveal">Allowed changes: Pending → Confirmed, Pending → Cancelled, Confirmed → Completed. Any other change is rejected by the system.</p>
+        </div>
+        <span class="slide-number">06 / 09</span>
+    </section>
+
+    <section class="rules-section" id="rules" aria-labelledby="rules-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">Business Rules</span>
+                <h2 id="rules-title">Fair, first come, first served.</h2>
+                <p class="section-copy">The backend protects every slot, even when two patients click at the same moment.</p>
+            </header>
+            <div class="grid grid-3">
+                <article class="card rule-card reveal">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">security</span></div>
+                    <h3>One appointment per slot</h3><p>A slot can be assigned to only one appointment.</p>
+                </article>
+                <article class="card rule-card reveal reveal-delay-1">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">lock</span></div>
+                    <h3>Available only</h3><p>Booked, disabled, or unavailable slots cannot be requested.</p>
+                </article>
+                <article class="card rule-card reveal reveal-delay-2">
+                    <div class="icon-tile success"><span class="material-symbols-outlined" aria-hidden="true">verified_user</span></div>
+                    <h3>Re-check before saving</h3>
+                    <p>Only the first valid request is saved. The other sees:</p>
+                    <q class="quote">This appointment slot is no longer available. Please select another slot.</q>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">07 / 09</span>
+    </section>
+
+    <section class="oop-section" id="design" aria-labelledby="design-title">
+        <div class="section-inner">
+            <header class="section-heading reveal">
+                <span class="eyebrow">Object-Oriented Design</span>
+                <h2 id="design-title">Built on inheritance and polymorphism.</h2>
+                <p class="section-copy">Role-specific behavior is modeled around a shared user abstraction.</p>
+            </header>
+            <div class="oop-grid">
+                <article class="oop-panel reveal">
+                    <h3>Class hierarchy</h3>
+                    <div class="class-tree" aria-label="User is the parent class of Patient and ClinicStaff">
+                        <span class="class-node parent">User</span>
+                        <span class="tree-connector" aria-hidden="true"></span>
+                        <div class="child-nodes">
+                            <span class="class-node">Patient</span>
+                            <span class="class-node">ClinicStaff</span>
+                        </div>
+                    </div>
+                    <code class="method-signature">get_user_role() → "Patient" | "Clinic Staff"</code>
+                    <p class="oop-note">The system calls <code>user.get_user_role()</code> after login. The object decides the answer, so the matching dashboard opens.</p>
+                </article>
+                <article class="oop-panel reveal reveal-delay-1">
+                    <h3>Core classes</h3>
+                    <ul class="core-list">
+                        <li><code>User</code> — parent with private, hashed password</li>
+                        <li><code>AppointmentSlot</code> — date, time, slot status</li>
+                        <li><code>Appointment</code> — links one patient to one slot</li>
+                        <li>Status changes only through methods that reject invalid moves</li>
+                    </ul>
+                    <p class="pattern-label">Patterns in use</p>
+                    <div class="pattern-list">
+                        <span class="pattern-chip">Factory · dashboards, notifications</span>
+                        <span class="pattern-chip">Adapter · password hashing, email</span>
+                        <span class="pattern-chip">Strategy · validation</span>
+                        <span class="pattern-chip">Generator · reports</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+        <span class="slide-number">08 / 09</span>
+    </section>
+
+    <section class="closing-section" id="closing" aria-labelledby="closing-title">
+        <div class="section-inner">
+            <header class="reveal">
+                <span class="eyebrow">Stack and Team</span>
+                <h2 id="closing-title">Ready to book your first appointment?</h2>
+            </header>
+            <div class="grid grid-3 stack-grid">
+                <article class="card stack-card reveal">
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">web</span></div>
+                    <h3>Frontend</h3><p>HTML, CSS, and JavaScript</p>
+                </article>
+                <article class="card stack-card reveal reveal-delay-1">
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">dns</span></div>
+                    <h3>Backend</h3><p>Python Flask, sessions, hashed passwords</p>
+                </article>
+                <article class="card stack-card reveal reveal-delay-2">
+                    <div class="icon-tile"><span class="material-symbols-outlined" aria-hidden="true">database</span></div>
+                    <h3>Database</h3><p>MySQL: users, slots, appointments</p>
+                </article>
+            </div>
+            <div class="hero-actions reveal">
+                <a class="btn btn-primary" href="{{ url_for('register_page') }}">Book an Appointment <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></a>
+                <a class="btn btn-secondary" href="{{ url_for('login_page') }}">Sign In to Account</a>
+            </div>
+            <footer class="presentation-footer reveal">
+                <strong>ClinicEase System © 2026</strong>
+                <span>Web-Based Healthcare Appointment Management</span>
+                <span>Course: Object Oriented Programming</span>
+                <span>Proponents: Bautista, Benitez, Padullon</span>
+                <span>Instructor: Mr. John Romel Tinasas</span>
+            </footer>
+        </div>
+        <span class="slide-number">09 / 09</span>
     </section>
 </div>
+{% endblock %}
 
-<!-- How it Works Section -->
-<section class="section-block">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">How ClinicEase Works</h2>
-            <p class="section-subtitle">A clear process for patients and clinic staff.</p>
-        </div>
-        <div class="grid-3">
-            <article class="card">
-                <div class="step-num">1</div>
-                <h3>Browse Available Slots</h3>
-                <p>Choose from appointment times made available by clinic staff.</p>
-            </article>
-            <article class="card">
-                <div class="step-num">2</div>
-                <h3>Submit Booking Request</h3>
-                <p>Tell us the reason for your visit. A contact number is optional.</p>
-            </article>
-            <article class="card">
-                <div class="step-num">3</div>
-                <h3>Track Status Updates</h3>
-                <p>See when staff confirm your request and when your visit is complete.</p>
-            </article>
-        </div>
-    </div>
-</section>
+{% block scripts %}
+<script>
+    (() => {
+        const presentation = document.getElementById("presentation");
+        const sections = [...presentation.querySelectorAll("section[id]")];
+        const dots = [...presentation.querySelectorAll(".section-dots a")];
 
-<!-- Status Lifecycle Section -->
-<div class="container">
-    <section class="status-section">
-        <div class="section-header">
-            <h2 class="section-title">Appointment Status Lifecycle</h2>
-            <p class="section-subtitle">Each status is shown with a label and a distinct color.</p>
-        </div>
-        <div class="grid-4">
-            <article class="card status-card">
-                <span class="badge-pending">Pending</span>
-                <p>Awaiting staff review</p>
-            </article>
-            <article class="card status-card">
-                <span class="badge-confirmed">Confirmed</span>
-                <p>Approved by clinic staff</p>
-            </article>
-            <article class="card status-card">
-                <span class="badge-completed">Completed</span>
-                <p>Clinic visit completed</p>
-            </article>
-            <article class="card status-card">
-                <span class="badge-cancelled">Cancelled</span>
-                <p>Request was not approved</p>
-            </article>
-        </div>
-    </section>
-</div>
+        presentation.classList.add("js");
+
+        const setActiveSection = (section) => {
+            dots.forEach((dot) => {
+                if (dot.hash === `#${section.id}`) {
+                    dot.setAttribute("aria-current", "step");
+                } else {
+                    dot.removeAttribute("aria-current");
+                }
+            });
+        };
+
+        document.addEventListener("keydown", (event) => {
+            if (event.altKey || event.ctrlKey || event.metaKey) return;
+            if (event.target instanceof Element && event.target.closest(
+                "a, button, input, select, textarea, [contenteditable='true']"
+            )) return;
+
+            const activeIndex = Math.max(
+                0,
+                dots.findIndex((dot) => dot.getAttribute("aria-current") === "step")
+            );
+            let targetIndex;
+
+            switch (event.key) {
+                case "ArrowDown":
+                case "ArrowRight":
+                case "PageDown":
+                case " ":
+                    targetIndex = Math.min(activeIndex + 1, sections.length - 1);
+                    break;
+                case "ArrowUp":
+                case "ArrowLeft":
+                case "PageUp":
+                    targetIndex = Math.max(activeIndex - 1, 0);
+                    break;
+                case "Home":
+                    targetIndex = 0;
+                    break;
+                case "End":
+                    targetIndex = sections.length - 1;
+                    break;
+                default:
+                    return;
+            }
+
+            event.preventDefault();
+            sections[targetIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        if ("IntersectionObserver" in window) {
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("is-visible");
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            presentation.querySelectorAll(".reveal").forEach((element) => revealObserver.observe(element));
+
+            const sectionObserver = new IntersectionObserver((entries) => {
+                const visible = entries
+                    .filter((entry) => entry.isIntersecting)
+                    .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+                if (visible) setActiveSection(visible.target);
+            }, { threshold: [0.35, 0.6] });
+
+            sections.forEach((section) => sectionObserver.observe(section));
+        } else {
+            presentation.querySelectorAll(".reveal").forEach((element) => element.classList.add("is-visible"));
+        }
+    })();
+</script>
 {% endblock %}

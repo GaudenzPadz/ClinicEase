@@ -155,7 +155,7 @@ p {
 
 .main-content {
     flex: 1 0 auto;
-    padding-block: 36px 48px;
+    /* padding-block: 36px 48px; */
 }
 
 .footer {
@@ -181,7 +181,7 @@ p {
     }
 
     .main-content {
-        padding-block: 24px 36px;
+        padding-block: 0px 10px;
     }
 
     .header-content {

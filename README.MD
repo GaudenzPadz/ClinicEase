@@ -242,3 +242,12 @@ New passwords are hashed with Werkzeug's password-hashing functions. The fresh-i
 ## Related Documentation
 
 - [`TECHNICAL_EVIDENCE_KEY_CODE_EXCERPTS.md`](TECHNICAL_EVIDENCE_KEY_CODE_EXCERPTS.md) — source-backed descriptions and screenshot targets for selected OOP concepts and patterns.
+
+
+
+
+
+REVISE PENDING REQUEST 
+REVISE LOGIN 
+SEPARATE LOGIN FORM OF USER AND ADMIN
+UPDATE ACTIVITY DIAGRAM

@@ -1,0 +1,733 @@
+/* =========================================================
+   1. DESIGN TOKENS (your palette, unchanged)
+   ========================================================= */
+:root {
+    --color-sage: #4A6B52;
+    --color-sage-hover: #3F5A47;
+    --color-sage-pale: #E5EEC5;
+    --color-cream: #F2F0E1;
+    --color-forest: #26402E;
+    --color-forest-muted: #46554A;
+    --color-white: #FFFFFF;
+    --color-border: #D9E0D7;
+    --color-border-input: #57705D;
+    --status-pending-bg: #FFF126;
+    --status-pending-text: #734A00;
+    --status-confirmed-bg: #DDF0FF;
+    --status-confirmed-text: #154C83;
+    --status-completed-bg: #E2F2E7;
+    --status-completed-text: #1B5C37;
+    --status-cancelled-bg: #FCD8D8;
+    --status-cancelled-text: #8B2121;
+    --radius: 18px;
+    --header-h: 64px;
+    --font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory
+}
+
+/* presentation behaviour: one slide per scroll */
+body {
+    font-family: var(--font);
+    background: var(--color-cream);
+    color: var(--color-forest);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased
+}
+
+a {
+    color: inherit
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-sage);
+    outline-offset: 3px;
+    border-radius: 6px
+}
+
+/* =========================================================
+   2. HEADER (sticky, same links as your skeleton)
+   ========================================================= */
+.site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-h);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(16px, 4vw, 48px);
+    background: rgba(242, 240, 225, .88);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border)
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none
+}
+
+.brand-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: var(--color-sage);
+    color: var(--color-white);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: .95rem;
+    letter-spacing: .5px
+}
+
+.brand-text strong {
+    display: block;
+    font-size: 1.02rem;
+    line-height: 1.1
+}
+
+.brand-text span {
+    font-size: .74rem;
+    color: var(--color-forest-muted)
+}
+
+.nav {
+    display: flex;
+    gap: 10px;
+    align-items: center
+}
+
+.btn {
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: .95rem;
+    text-decoration: none;
+    border: 2px solid var(--color-sage);
+    transition: transform .15s, background .15s
+}
+
+.btn:hover {
+    transform: translateY(-2px)
+}
+
+.btn-primary {
+    background: var(--color-sage);
+    color: var(--color-white)
+}
+
+.btn-primary:hover {
+    background: var(--color-sage-hover);
+    border-color: var(--color-sage-hover)
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--color-sage)
+}
+
+.btn-ghost:hover {
+    background: var(--color-sage-pale)
+}
+
+.btn-light {
+    background: var(--color-cream);
+    color: var(--color-forest);
+    border-color: var(--color-cream)
+}
+
+.btn-outline-light {
+    background: transparent;
+    color: var(--color-cream);
+    border-color: var(--color-cream)
+}
+
+/* =========================================================
+   3. SLIDE BASE (every section is one full-screen slide)
+   ========================================================= */
+.slide {
+    min-height: 100vh;
+    min-height: 100dvh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--header-h) + 32px) clamp(20px, 7vw, 110px) 56px;
+    position: relative;
+    overflow: hidden
+}
+
+.slide.dark {
+    background: var(--color-forest);
+    color: var(--color-cream)
+}
+
+.slide.pale {
+    background: var(--color-sage-pale)
+}
+
+.inner {
+    max-width: 1120px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1
+}
+
+.eyebrow {
+    display: inline-block;
+    font-size: .8rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--color-sage);
+    margin-bottom: 14px
+}
+
+.dark .eyebrow {
+    color: var(--color-sage-pale)
+}
+
+h1 {
+    font-size: clamp(2.4rem, 6vw, 4.6rem);
+    line-height: 1.04;
+    letter-spacing: -.03em;
+    font-weight: 800
+}
+
+h2 {
+    font-size: clamp(1.9rem, 4vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    font-weight: 800;
+    margin-bottom: 12px
+}
+
+.lead {
+    font-size: clamp(1.02rem, 1.6vw, 1.25rem);
+    color: var(--color-forest-muted);
+    max-width: 660px
+}
+
+.dark .lead {
+    color: #C9CFBF
+}
+
+.slide-num {
+    position: absolute;
+    right: clamp(20px, 5vw, 60px);
+    bottom: 22px;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--color-forest-muted);
+    letter-spacing: .1em
+}
+
+.dark .slide-num {
+    color: #C9CFBF
+}
+
+/* decorative blobs for a modern feel */
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2px);
+    z-index: 0;
+    pointer-events: none
+}
+
+.blob.a {
+    width: 520px;
+    height: 520px;
+    right: -140px;
+    top: -120px;
+    background: var(--color-sage-pale)
+}
+
+.blob.b {
+    width: 300px;
+    height: 300px;
+    right: 12%;
+    bottom: -120px;
+    background: var(--color-sage);
+    opacity: .15
+}
+
+.dark .blob.a {
+    background: var(--color-sage);
+    opacity: .25
+}
+
+/* =========================================================
+   4. CARDS + GRIDS
+   ========================================================= */
+.grid {
+    display: grid;
+    gap: 18px;
+    margin-top: 34px
+}
+
+.g3 {
+    grid-template-columns: repeat(3, 1fr)
+}
+
+.g2 {
+    grid-template-columns: repeat(2, 1fr)
+}
+
+.g4 {
+    grid-template-columns: repeat(4, 1fr)
+}
+
+.g5 {
+    grid-template-columns: repeat(5, 1fr)
+}
+
+.card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 26px;
+    box-shadow: 0 10px 30px -18px rgba(38, 64, 46, .35);
+    transition: transform .2s
+}
+
+.card:hover {
+    transform: translateY(-4px)
+}
+
+.card h3 {
+    font-size: 1.15rem;
+    margin-bottom: 8px
+}
+
+.card p,
+.card li {
+    color: var(--color-forest-muted);
+    font-size: .97rem
+}
+
+.card ul {
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    margin-top: 10px
+}
+
+.card li::before {
+    content: "✓";
+    color: var(--color-sage);
+    font-weight: 800;
+    margin-right: 8px
+}
+
+.card li.no::before {
+    content: "✕";
+    color: var(--status-cancelled-text)
+}
+
+.dark .card {
+    background: rgba(242, 240, 225, .07);
+    border-color: rgba(242, 240, 225, .18);
+    box-shadow: none
+}
+
+.dark .card p,
+.dark .card li {
+    color: #C9CFBF
+}
+
+.dark .card li::before {
+    color: var(--color-sage-pale)
+}
+
+.icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: var(--color-sage-pale);
+    color: var(--color-forest);
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px
+}
+
+.dark .icon {
+    background: var(--color-sage);
+    color: var(--color-cream)
+}
+
+.icon svg {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+    stroke: currentColor;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.numbadge {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--color-sage);
+    color: var(--color-white);
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 14px
+}
+
+/* =========================================================
+   5. HERO SLIDE
+   ========================================================= */
+.badge {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--color-sage-pale);
+    color: var(--color-forest);
+    font-weight: 700;
+    font-size: .85rem;
+    margin-bottom: 24px;
+    border: 1px solid var(--color-border)
+}
+
+.badge i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-sage)
+}
+
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr .85fr;
+    gap: 48px;
+    align-items: center
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 32px
+}
+
+.hero h1 em {
+    font-style: normal;
+    color: var(--color-sage)
+}
+
+.hero .lead {
+    margin-top: 22px
+}
+
+.mock {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: 24px;
+    padding: 22px;
+    box-shadow: 0 30px 60px -28px rgba(38, 64, 46, .5);
+    transform: rotate(1.5deg)
+}
+
+.mock-head {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    margin-bottom: 14px
+}
+
+.mock-head span {
+    font-size: .78rem;
+    color: var(--color-forest-muted);
+    font-weight: 600
+}
+
+.slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    margin-top: 10px;
+    font-size: .93rem
+}
+
+.slot b {
+    display: block
+}
+
+.slot small {
+    color: var(--color-forest-muted)
+}
+
+.tag {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: .78rem;
+    font-weight: 800;
+    white-space: nowrap
+}
+
+.tag.pending {
+    background: var(--status-pending-bg);
+    color: var(--status-pending-text)
+}
+
+.tag.confirmed {
+    background: var(--status-confirmed-bg);
+    color: var(--status-confirmed-text)
+}
+
+.tag.completed {
+    background: var(--status-completed-bg);
+    color: var(--status-completed-text)
+}
+
+.tag.cancelled {
+    background: var(--status-cancelled-bg);
+    color: var(--status-cancelled-text)
+}
+
+.tag.avail {
+    background: var(--color-sage-pale);
+    color: var(--color-forest)
+}
+
+.scroll-hint {
+    margin-top: 40px;
+    font-size: .85rem;
+    color: var(--color-forest-muted);
+    font-weight: 600
+}
+
+/* =========================================================
+   6. STATUS LIFECYCLE
+   ========================================================= */
+.flow {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 40px
+}
+
+.flow>.status-card,
+.flow>.branch {
+    flex: 1 1 0;
+    min-width: 0
+}
+
+.flow .arrow {
+    font-size: 1.6rem;
+    color: var(--color-sage);
+    font-weight: 800
+}
+
+.status-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    min-width: 0
+}
+
+.status-card .tag {
+    font-size: 1rem;
+    padding: 6px 18px
+}
+
+.status-card p {
+    margin-top: 10px;
+    font-size: .9rem;
+    color: var(--color-forest-muted)
+}
+
+.branch {
+    display: grid;
+    gap: 14px
+}
+
+.note {
+    margin-top: 26px;
+    font-size: .95rem;
+    color: var(--color-forest-muted);
+    max-width: 760px
+}
+
+/* =========================================================
+   7. OOP SLIDE (class tree)
+   ========================================================= */
+.tree {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    margin-top: 30px
+}
+
+.node {
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-family: ui-monospace, Consolas, monospace;
+    background: var(--color-cream);
+    color: var(--color-forest);
+    font-size: .95rem
+}
+
+.node.root {
+    background: var(--color-sage-pale)
+}
+
+.kids {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center
+}
+
+.line {
+    width: 2px;
+    height: 18px;
+    background: var(--color-sage-pale)
+}
+
+.small-code {
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: .85rem;
+    color: var(--color-sage-pale)
+}
+
+/* =========================================================
+   8. SIDE DOT NAVIGATION + FOOTER
+   ========================================================= */
+.dots {
+    position: fixed;
+    right: clamp(10px, 2vw, 24px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    gap: 12px;
+    z-index: 60
+}
+
+.dots a {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--color-sage);
+    background: transparent;
+    display: block;
+    transition: .2s
+}
+
+.dots a.on {
+    background: var(--color-sage);
+    transform: scale(1.3)
+}
+
+body.on-dark .dots a {
+    border-color: var(--color-sage-pale)
+}
+
+body.on-dark .dots a.on {
+    background: var(--color-sage-pale)
+}
+
+.footer {
+    margin-top: 44px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(242, 240, 225, .2);
+    font-size: .88rem;
+    color: #C9CFBF;
+    display: grid;
+    gap: 4px
+}
+
+.footer strong {
+    color: var(--color-cream)
+}
+
+/* =========================================================
+   9. RESPONSIVE
+   ========================================================= */
+@media(max-width:900px) {
+    html {
+        scroll-snap-type: y proximity
+    }
+
+    /* tall slides on phones must not trap scrolling */
+    .hero-grid,
+    .g3,
+    .g2,
+    .g4,
+    .g5 {
+        grid-template-columns: 1fr
+    }
+
+    .mock {
+        transform: none
+    }
+
+    .dots {
+        display: none
+    }
+
+    .brand-text span {
+        display: none
+    }
+
+    .nav .btn {
+        padding: 9px 14px;
+        font-size: .85rem
+    }
+
+    .flow {
+        flex-direction: column;
+        align-items: stretch
+    }
+
+    .flow .arrow {
+        transform: rotate(90deg);
+        text-align: center
+    }
+
+    .brand-text {
+        display: none
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+    html {
+        scroll-behavior: auto
+    }
+
+    .btn,
+    .card {
+        transition: none
+    }
+}

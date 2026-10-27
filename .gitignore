@@ -15,4 +15,5 @@ venv/
 Thumbs.db
 "@ | Out-File -Encoding utf8 .gitignore
 diregard.ps1
-# ignore/
+ignore/
+ignore
